@@ -1,0 +1,1 @@
+MiniDeskTube is a Windows application that allows YouTube users to search and watch videos, manage their playlists.

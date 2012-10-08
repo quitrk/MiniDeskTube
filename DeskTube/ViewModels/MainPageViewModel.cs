@@ -360,7 +360,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool ArePlaylistsVisible
         {
-            get { return this.SelectedUserFeed.Equals("playlists"); }
+            get { return this.SelectedUserFeed != null && this.SelectedUserFeed.Equals("playlists"); }
         }
 
         /// <summary>

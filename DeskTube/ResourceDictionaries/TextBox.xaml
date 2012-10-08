@@ -4,9 +4,9 @@
     <Style TargetType="{x:Type TextBox}">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Century Gothic"/>
-        <Setter Property="Foreground" Value="{DynamicResource DarkGrayBrush}"/>
+        <Setter Property="Foreground" Value="Black"/>
         <Setter Property="Padding" Value="5"/>
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -17,29 +17,28 @@
                             Background="{TemplateBinding Background}">
                         <Grid>
                             <ScrollViewer x:Name="PART_ContentHost"/>
-                            <Grid x:Name="tagContainer">
-                                <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightGrayBrush}"
+                            <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="Black"
                                        Text="{TemplateBinding Tag}"
                                        Visibility="{TemplateBinding Text, Converter={StaticResource StringToVisibilityInvertedConverter}}"/>
-                            </Grid>
                         </Grid>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Visibility" TargetName="tagContainer" Value="Collapsed"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="Black"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style TargetType="{x:Type PasswordBox}">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Century Gothic"/>
-        <Setter Property="Foreground" Value="{DynamicResource DarkGrayBrush}"/>
+        <Setter Property="Foreground" Value="Black"/>
         <Setter Property="Padding" Value="5"/>
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -53,5 +52,10 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="Background" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

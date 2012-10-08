@@ -135,21 +135,21 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox FontFamily="Century Gothic" Foreground="{DynamicResource LightGrayBrush}" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="1">
-                    <Button Style="{DynamicResource CleanButtonStyle}">
+                    <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop">
                         <Image Source="../images/stopIcon.png" Height="22"/>
                     </Button>
-                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Play">
                         <Image Source="../images/playIcon.png" Height="22"/>
                     </Button>
-                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Previous song">
                         <Image Source="../images/previousIcon.png" Height="22"/>
                     </Button>
-                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Next song">
                         <Image Source="../images/nextIcon.png" Height="22"/>
                     </Button>
-                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Shuffle is off">
                         <Image Source="../images/shuffleIcon.png" Height="22"/>
                     </Button>
                 </StackPanel>

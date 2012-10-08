@@ -1,0 +1,22 @@
+﻿<Application x:Class="DeskTube.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="Views\Shell.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ResourceDictionaries/Brushes.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/BusyIndicator.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/Button.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/CheckBox.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/Converters.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/ListBox.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/Miscellaenous.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/ScrollViewer.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/SwipeControl.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/TextBlock.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/TextBox.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

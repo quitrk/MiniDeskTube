@@ -1,0 +1,11 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockStyle"> <!-- FU BUTTON-->
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontFamily" Value="Bell Gothic Std"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+</ResourceDictionary>

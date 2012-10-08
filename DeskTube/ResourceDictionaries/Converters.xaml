@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:Converters="clr-namespace:Infrastructure.Converters;assembly=Infrastructure">
+    
+    <Converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    <Converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    <Converters:StringToVisibilityInvertedConverter x:Key="StringToVisibilityInvertedConverter"/>
+    <Converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+</ResourceDictionary>

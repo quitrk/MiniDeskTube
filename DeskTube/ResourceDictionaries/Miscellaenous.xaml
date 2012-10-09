@@ -1,31 +1,15 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:Controls="clr-namespace:Infrastructure.Controls;assembly=Infrastructure">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <Style TargetType="{x:Type Border}" x:Key="BorderStyle">
-        <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="10" Direction="270" Opacity="0.3"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="{x:Type Controls:ClippingBorder}">
-        <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="CornerRadius" Value="0"/>
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-    </Style>
-
     <Style TargetType="{x:Type Path}" x:Key="LineStyle">
         <Setter Property="Data" Value="M0,84 L219,84"/>
         <Setter Property="Stretch" Value="Fill"/>
         <Setter Property="Height" Value="1"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Stroke" Value="{DynamicResource LightGrayBrush}"/>
+    </Style>
+    
+    <Style TargetType="{x:Type MenuItem}">
+        <Setter Property="Background" Value="{DynamicResource DarkGrayBrush}"/>
     </Style>
 </ResourceDictionary>

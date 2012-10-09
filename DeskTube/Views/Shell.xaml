@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Shell" WindowState="Normal"
         WindowStyle="None" WindowStartupLocation="CenterScreen"
-        BorderThickness="1" Background="#ee252525"
+        BorderThickness="1" Background="#ee252525" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:ViewModels="clr-namespace:DeskTube.ViewModels" mc:Ignorable="d"
+        xmlns:ViewModels="clr-namespace:DeskTube.ViewModels" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
         d:DataContext="{d:DesignInstance ViewModels:ShellViewModel}" ResizeMode="NoResize" Width="500" Height="600"
         MouseLeftButtonDown="OnWindowMouseLeftButtonDown">
     
@@ -48,11 +49,11 @@
 		</Storyboard>
 	</Window.Resources>
     
-    <!--<Window.Style>
+    <Window.Style>
         <Style TargetType="{x:Type Window}">
             <Setter Property="WindowChrome.WindowChrome">
                 <Setter.Value>
-                    <WindowChrome CaptionHeight="20"
+                    <WindowChrome CaptionHeight="0"
                                   CornerRadius="0"
                                   GlassFrameThickness="0,0,0,-1"
                                   NonClientFrameEdges="None"
@@ -61,43 +62,63 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    </Window.Style>-->
+    </Window.Style>
+    
+    <xctk:BusyIndicator IsBusy="{Binding StartupPageViewModel.IsLoading}" >
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition />
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+            <!-- title bar -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- title bar -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <StackPanel Grid.ColumnSpan="4">
+                    <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" Foreground="{DynamicResource LightBlueBrush}"/>
+                    <TextBlock Style="{DynamicResource TextBlockStyle}" Text="Enjoy all YouTube videos on your desktop" Foreground="{DynamicResource LightGrayBrush}"/>
+                </StackPanel>
 
-            <StackPanel Grid.ColumnSpan="4">
-                <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" Foreground="{DynamicResource LightBlueBrush}"/>
-                <TextBlock Style="{DynamicResource TextBlockStyle}" Text="Enjoy all YouTube videos on your desktop" Foreground="{DynamicResource LightGrayBrush}"/>
-            </StackPanel>
+                <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="1" ToolTip="Settings" VerticalAlignment="Top">
+                    <Image Source="..\images\settingsIcon.png" Width="16" Height="16"/>
+                </Button>
+                <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="2" Margin="5,0,0,0" ToolTip="Logout" Command="{Binding LogoutCommand}" VerticalAlignment="Top">
+                    <Image Source="..\images\logoutIcon.png" Width="16"/>
+                </Button>
+                <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="3" Margin="5,0,0,0" Click="OnCloseWindow" ToolTip="Exit" VerticalAlignment="Top">
+                    <Image Source="..\images\closeApplicationIcon.png" Width="16"/>
+                </Button>
+            </Grid>
 
-            <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="1" ToolTip="Settings" VerticalAlignment="Top">
-                <Image Source="..\images\settingsIcon.png" Width="16" Height="16"/>
-            </Button>
-            <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="2" Margin="5,0,0,0" ToolTip="Logout" Command="{Binding LogoutCommand}" VerticalAlignment="Top">
-                <Image Source="..\images\logoutIcon.png" Width="16"/>
-            </Button>
-            <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="3" Margin="5,0,0,0" Click="OnCloseWindow" ToolTip="Exit" VerticalAlignment="Top">
-                <Image Source="..\images\closeApplicationIcon.png" Width="16"/>
-            </Button>
+            <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" Margin="0,20,0,0" x:Name="startupPage" RenderTransformOrigin="0.5,0.5">
+                <ContentControl.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </ContentControl.RenderTransform>
+            </ContentControl>
+            <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" Margin="0,20,0,0" x:Name="mainPage" RenderTransformOrigin="0.5,0.5">
+                <ContentControl.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </ContentControl.RenderTransform>
+            </ContentControl>
+
+            <!-- footer -->
         </Grid>
-
-        <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" Margin="0,10,0,0" x:Name="startupPage"/>
-        <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" Margin="0,10,0,0" x:Name="mainPage"/>
-        
-        <!-- footer -->
-    </Grid>
+    </xctk:BusyIndicator>
 </Window>

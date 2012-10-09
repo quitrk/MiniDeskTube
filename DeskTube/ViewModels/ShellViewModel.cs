@@ -109,8 +109,11 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleLogoutCommand()
         {
-            this.mainPageViewModel.Dispose();
-            this.mainPageViewModel = null;
+            if (this.mainPageViewModel != null)
+            {
+                this.mainPageViewModel.Dispose();
+                this.mainPageViewModel = null;
+            }
 
             ((Shell)this.View).LocationChanged -= OnShellLocationChanged;
             ((Shell)this.View).Activated -= this.OnShellActivated;

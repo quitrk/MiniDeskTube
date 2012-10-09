@@ -34,18 +34,11 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\ClippingBorder.cs" />
-    <Compile Include="Controls\SwipeControl.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityInvertedConverter.cs" />
     <Compile Include="Converters\CountToVisibilityConverter.cs" />
@@ -60,6 +53,7 @@
     <Compile Include="Types\Video.cs" />
     <Compile Include="Utilities\Animate.cs" />
     <Compile Include="Utilities\Direction.cs" />
+    <Compile Include="Utilities\EventToCommand.cs" />
     <Compile Include="Utilities\HtmlEventProxy.cs" />
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>

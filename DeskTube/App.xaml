@@ -13,7 +13,6 @@
                 <ResourceDictionary Source="ResourceDictionaries/ListBox.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/Miscellaenous.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/ScrollViewer.xaml"/>
-                <ResourceDictionary Source="ResourceDictionaries/SwipeControl.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/TextBlock.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/TextBox.xaml"/>
             </ResourceDictionary.MergedDictionaries>

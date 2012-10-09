@@ -24,6 +24,16 @@ namespace DeskTube.ViewModels
         #region BACKING FIELDS
 
         /// <summary>
+        /// Backing field for IsCommentsPopupOpen
+        /// </summary>
+        private bool isCommentsPopupOpen;
+
+        /// <summary>
+        /// Backing field for CurrentVideoComments property
+        /// </summary>
+        private ObservableCollection<Comment> currentVideoComments;
+
+        /// <summary>
         /// Backing field for IsPaused
         /// </summary>
         private bool isPaused;
@@ -118,7 +128,7 @@ namespace DeskTube.ViewModels
         /// <summary>
         /// The random object used for shuffling videos
         /// </summary>
-        private Random random = new Random(2000);
+        private readonly Random random = new Random(2000);
 
         #endregion
 
@@ -130,17 +140,39 @@ namespace DeskTube.ViewModels
         public MainPageViewModel()
         {
             this.CurrentVideos = new ObservableCollection<Video>();
+            this.CurrentVideoComments = new ObservableCollection<Comment>();
 
             this.PauseCommand = new DelegateCommand(this.HandlePauseCommand);
             this.PlayCommand = new DelegateCommand(this.HandlePlayCommand);
             this.PlayNextVideoCommand = new DelegateCommand(this.HandlePlayNextVideoCommand);
             this.PlayPreviousVideoCommand = new DelegateCommand(this.HandlePlayPreviousVideoCommand);
             this.StopCommand = new DelegateCommand(this.HandleStopCommand);
+            this.ViewCommentsCommand = new DelegateCommand(this.HandleViewCommentsCommand);
+            this.SelectVideoCommand = new DelegateCommand<Video>(this.HandleSelectVideoCommand);
         }
 
         #endregion
 
         #region PROPERTIES
+
+        /// <summary>
+        /// Gets or sets the isCommentsPopupOpen.
+        /// </summary>
+        /// <value>The isCommentsPopupOpen.</value>
+        /// <remarks></remarks>
+        public bool IsCommentsPopupOpen
+        {
+            get
+            {
+                return this.isCommentsPopupOpen;
+            }
+
+            set
+            {
+                this.isCommentsPopupOpen = value;
+                this.OnPropertyChanged(() => this.IsCommentsPopupOpen);
+            }
+        }
 
         /// <summary>
         /// Gets the total minutes.
@@ -227,7 +259,7 @@ namespace DeskTube.ViewModels
                 this.OnPropertyChanged(() => this.CurrentSecond);
             }
         }
-
+        
         /// <summary>
         /// Gets or sets the browserView.
         /// </summary>
@@ -431,7 +463,26 @@ namespace DeskTube.ViewModels
                 this.OnPropertyChanged(() => this.CurrentVideos);
             }
         }
-        
+
+        /// <summary>
+        /// Gets the current video comments.
+        /// </summary>
+        /// <value>
+        /// The current video comments.
+        /// </value>
+        public ObservableCollection<Comment> CurrentVideoComments
+        {
+            get
+            {
+                return this.currentVideoComments;
+            }
+            set
+            {
+                this.currentVideoComments = value;
+                this.OnPropertyChanged(() => this.CurrentVideoComments);
+            }
+        }
+
         /// <summary>
         /// Gets or sets the current video.
         /// </summary>
@@ -448,32 +499,6 @@ namespace DeskTube.ViewModels
             set
             {
                 this.currentVideo = value;
-
-                if (this.currentVideo != null)
-                {
-                    if (!this.IsBrowserVisible)
-                    {
-                        this.IsBrowserVisible = true;
-                    }
-
-                    if (!this.IsPaused)
-                    {
-                        this.ClearTimers();
-                    }
-
-                    this.BrowserView = new BrowserView();
-                    this.GetBrowser().Navigate(this.GetEmbedUrlFromLink(this.currentVideo.WatchPage.ToString()));
-                    this.GetBrowser().Navigated += this.OnBrowserNavigated;
-
-                    this.TotalMinutes = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
-                    this.TotalSeconds = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
-                }
-                else
-                {
-                    this.TotalMinutes = null;
-                    this.TotalSeconds = null;
-                }
-
                 this.OnPropertyChanged(() => this.CurrentVideo);
             }
         }
@@ -521,6 +546,14 @@ namespace DeskTube.ViewModels
         #region COMMANDS
 
         /// <summary>
+        /// Gets or sets the view comments command.
+        /// </summary>
+        /// <value>
+        /// The view comments command.
+        /// </value>
+        public DelegateCommand ViewCommentsCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the stop command.
         /// </summary>
         /// <value>
@@ -559,6 +592,14 @@ namespace DeskTube.ViewModels
         /// The play next song command.
         /// </value>
         public DelegateCommand PlayNextVideoCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the select video command.
+        /// </summary>
+        /// <value>
+        /// The select video command.
+        /// </value>
+        public DelegateCommand<Video> SelectVideoCommand { get; set; }
 
         #endregion
 
@@ -601,6 +642,17 @@ namespace DeskTube.ViewModels
         #region COMMAND HANDLERS
 
         /// <summary>
+        /// Handles the view comments command.
+        /// </summary>
+        private void HandleViewCommentsCommand()
+        {
+            this.IsCommentsPopupOpen = true;
+            this.youtubeRequest.Settings.AutoPaging = false;
+            this.CurrentVideoComments = new ObservableCollection<Comment>(this.youtubeRequest.GetComments(this.CurrentVideo).Entries);
+            this.youtubeRequest.Settings.AutoPaging = true;
+        }
+
+        /// <summary>
         /// Handles the pause command.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -617,7 +669,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandlePlayCommand()
         {
-            this.CurrentVideo = this.currentVideo;
+            this.PlayVideo(this.currentVideo);
         }
 
         /// <summary>
@@ -633,7 +685,7 @@ namespace DeskTube.ViewModels
 
                 if (nextVideoIndex < this.CurrentVideos.Count)
                 {
-                    this.CurrentVideo = this.CurrentVideos[nextVideoIndex];
+                    this.PlayVideo(this.CurrentVideos[nextVideoIndex]);
                 }
             }
             else
@@ -655,7 +707,7 @@ namespace DeskTube.ViewModels
 
                 if (previousVideoIndex >= 0)
                 {
-                    this.CurrentVideo = this.CurrentVideos[previousVideoIndex];
+                    this.PlayVideo(this.CurrentVideos[previousVideoIndex]);
                 }
             }
             else
@@ -675,9 +727,53 @@ namespace DeskTube.ViewModels
             this.BrowserView = new BrowserView();
         }
 
+        /// <summary>
+        /// Handles the select video command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSelectVideoCommand(Video video)
+        {
+            this.PlayVideo(video);
+        }
+
         #endregion
 
         #region PRIVATE METHODS
+
+        /// <summary>
+        /// Selects the video.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        private void PlayVideo(Video video)
+        {
+            this.CurrentVideo = video;
+
+            if (this.CurrentVideo != null)
+            {
+                if (!this.IsBrowserVisible)
+                {
+                    this.IsBrowserVisible = true;
+                }
+
+                if (!this.IsPaused)
+                {
+                    this.ClearTimers();
+                }
+
+                this.BrowserView = new BrowserView();
+                this.GetBrowser().Navigate(this.GetEmbedUrlFromLink(this.currentVideo.WatchPage.ToString()));
+                this.GetBrowser().Navigated += this.OnBrowserNavigated;
+
+                this.TotalMinutes = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
+                this.TotalSeconds = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
+            }
+            else
+            {
+                this.TotalMinutes = null;
+                this.TotalSeconds = null;
+            }
+        }
 
         /// <summary>
         /// Plays the random video.
@@ -686,7 +782,7 @@ namespace DeskTube.ViewModels
         private void PlayRandomVideo()
         {
             this.IsPaused = false;
-            this.CurrentVideo = this.CurrentVideos[this.random.Next(0, this.CurrentVideos.Count - 1)];
+            this.PlayVideo(this.CurrentVideos[this.random.Next(0, this.CurrentVideos.Count - 1)]);
         }
 
         /// <summary>
@@ -894,6 +990,7 @@ namespace DeskTube.ViewModels
             this.selectedPlaylist = null;
             this.Playlists = null;
             this.UserFeeds = null;
+            this.CurrentVideoComments = null;
 
             this.IsBrowserVisible = false;
 
@@ -909,4 +1006,3 @@ namespace DeskTube.ViewModels
         #endregion
     }
 }
-    

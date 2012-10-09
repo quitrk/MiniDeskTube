@@ -54,7 +54,7 @@
     <Compile Include="Utilities\Animate.cs" />
     <Compile Include="Utilities\Direction.cs" />
     <Compile Include="Utilities\EventToCommand.cs" />
-    <Compile Include="Utilities\HtmlEventProxy.cs" />
+    <Compile Include="Utilities\ApplicationVolume.cs" />
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>

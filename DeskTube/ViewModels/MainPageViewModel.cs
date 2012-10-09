@@ -156,6 +156,26 @@ namespace DeskTube.ViewModels
         #region PROPERTIES
 
         /// <summary>
+        /// Gets or sets the volume level.
+        /// </summary>
+        /// <value>
+        /// The volume level.
+        /// </value>
+        public int VolumeLevel
+        {
+            get
+            {
+                return ApplicationVolume.GetVolume();
+            }
+
+            set
+            {
+                ApplicationVolume.SetVolume(value);
+                this.OnPropertyChanged(() => this.VolumeLevel);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the isCommentsPopupOpen.
         /// </summary>
         /// <value>The isCommentsPopupOpen.</value>
@@ -259,7 +279,7 @@ namespace DeskTube.ViewModels
                 this.OnPropertyChanged(() => this.CurrentSecond);
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the browserView.
         /// </summary>
@@ -983,7 +1003,8 @@ namespace DeskTube.ViewModels
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        public override void Dispose()
+        /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        private void Dispose(bool all)
         {
             this.currentVideo = null;
             this.CurrentVideos = null;
@@ -1000,7 +1021,16 @@ namespace DeskTube.ViewModels
             }
 
             this.ClearTimers();
-            base.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public sealed override void Dispose()
+        {
+            this.Dispose(true);
         }
 
         #endregion

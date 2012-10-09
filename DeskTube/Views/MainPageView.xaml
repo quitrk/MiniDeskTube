@@ -102,7 +102,13 @@
             <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn">
                 <Image Source="../images/commentsIcon.png" Height="16"/>
             </Button>
+            
+            <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
+                    Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
 
+            <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightBlueBrush}" HorizontalAlignment="Center" Margin="10,0" 
+                       Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" FontSize="12"/>
+            
             <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
                 <StackPanel Background="{DynamicResource DarkGrayBrush}">
                     <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
@@ -123,7 +129,7 @@
                 </StackPanel>
             </Popup>
 
-            <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightGrayBrush}">
+            <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightGrayBrush}" VerticalAlignment="Bottom" FontSize="12">
                 <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
                 <Run Text="/"/>
                 <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>

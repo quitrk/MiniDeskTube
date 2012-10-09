@@ -187,11 +187,25 @@ namespace DeskTube.ViewModels
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        public override void Dispose()
+        /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        private void Dispose(bool all)
         {
+            this.mainPageViewModel.Dispose();
+            this.startupPageViewModel.Dispose();
+
             ((Shell)this.View).LocationChanged -= OnShellLocationChanged;
             ((Shell)this.View).Activated -= this.OnShellActivated;
             ((Shell)this.View).Deactivated -= this.OnShellDeactived;
+
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public sealed override void Dispose()
+        {
+            this.Dispose(true);
         }
 
         #endregion

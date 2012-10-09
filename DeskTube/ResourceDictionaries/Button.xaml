@@ -34,11 +34,38 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border Background="#00ffffff">
-                        <ContentPresenter />
-                    </Border>
+                    <ContentPresenter />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ToggleButton}" x:Key="ShuffleButtonStyle">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="ToolTip" Value="Shuffle is on"/>
+                <Setter Property="Content">
+                    <Setter.Value>
+                        <Image Height="20" Source="../images/shuffleOnIcon.png"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <Trigger Property="IsChecked" Value="False">
+                <Setter Property="ToolTip" Value="Shuffle is off"/>
+                <Setter Property="Content">
+                    <Setter.Value>
+                        <Image Height="20" Source="../images/shuffleOffIcon.png"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 </ResourceDictionary>

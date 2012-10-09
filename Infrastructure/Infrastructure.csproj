@@ -47,6 +47,7 @@
     <Compile Include="Controls\ClippingBorder.cs" />
     <Compile Include="Controls\SwipeControl.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\BoolToVisibilityInvertedConverter.cs" />
     <Compile Include="Converters\CountToVisibilityConverter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\StringToVisibilityInvertedConverter.cs" />

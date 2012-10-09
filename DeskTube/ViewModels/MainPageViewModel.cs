@@ -14,6 +14,7 @@ using DeskTube.Views;
 using Google.YouTube;
 using Infrastructure;
 using Infrastructure.Utilities;
+using Microsoft.Practices.Prism.Commands;
 using mshtml;
 
 namespace DeskTube.ViewModels
@@ -21,6 +22,26 @@ namespace DeskTube.ViewModels
     public class MainPageViewModel : ViewModelBase
     {
         #region BACKING FIELDS
+
+        /// <summary>
+        /// Backing field for IsPaused
+        /// </summary>
+        private bool isPaused;
+
+        /// <summary>
+        /// Backing field for IsShuffle
+        /// </summary>
+        private bool isShuffle;
+
+        /// <summary>
+        /// Backing field for TotalSeconds property
+        /// </summary>
+        private int? totalSeconds;
+
+        /// <summary>
+        /// Backing field for TotalMinutes property
+        /// </summary>
+        private int? totalMinutes;
 
         /// <summary>
         /// Backing field for CurrentMinute
@@ -92,7 +113,12 @@ namespace DeskTube.ViewModels
         /// <value>
         /// The filtered current videos.
         /// </value>
-        public ListCollectionView FilteredCurrentVideos { get; set; }
+        private ListCollectionView FilteredCurrentVideos;
+
+        /// <summary>
+        /// The random object used for shuffling videos
+        /// </summary>
+        private Random random = new Random(2000);
 
         #endregion
 
@@ -103,7 +129,13 @@ namespace DeskTube.ViewModels
         /// </summary>
         public MainPageViewModel()
         {
-            this.currentVideos = new ObservableCollection<Video>();
+            this.CurrentVideos = new ObservableCollection<Video>();
+
+            this.PauseCommand = new DelegateCommand(this.HandlePauseCommand);
+            this.PlayCommand = new DelegateCommand(this.HandlePlayCommand);
+            this.PlayNextVideoCommand = new DelegateCommand(this.HandlePlayNextVideoCommand);
+            this.PlayPreviousVideoCommand = new DelegateCommand(this.HandlePlayPreviousVideoCommand);
+            this.StopCommand = new DelegateCommand(this.HandleStopCommand);
         }
 
         #endregion
@@ -120,12 +152,13 @@ namespace DeskTube.ViewModels
         {
             get
             {
-                if (this.CurrentVideo != null)
-                {
-                    return new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
-                }
+                return this.totalMinutes;
+            }
 
-                return null;
+            set
+            {
+                this.totalMinutes = value;
+                this.OnPropertyChanged(() => this.TotalMinutes);
             }
         }
 
@@ -139,12 +172,12 @@ namespace DeskTube.ViewModels
         {
             get
             {
-                if (CurrentVideo != null)
-                {
-                    return new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
-                }
-
-                return null;
+                return this.totalSeconds;
+            }
+            set
+            {
+                this.totalSeconds = value;
+                this.OnPropertyChanged(() => this.TotalSeconds);
             }
         }
 
@@ -387,9 +420,18 @@ namespace DeskTube.ViewModels
         /// </value>
         public ObservableCollection<Video> CurrentVideos
         {
-            get { return this.currentVideos; }
-        }
+            get
+            {
+                return this.currentVideos;
+            }
 
+            set
+            {
+                this.currentVideos = value;
+                this.OnPropertyChanged(() => this.CurrentVideos);
+            }
+        }
+        
         /// <summary>
         /// Gets or sets the current video.
         /// </summary>
@@ -398,7 +440,10 @@ namespace DeskTube.ViewModels
         /// </value>
         public Video CurrentVideo
         {
-            get { return this.currentVideo; }
+            get
+            {
+                return this.currentVideo;
+            }
 
             set
             {
@@ -411,18 +456,109 @@ namespace DeskTube.ViewModels
                         this.IsBrowserVisible = true;
                     }
 
-                    this.ClearTimers();
+                    if (!this.IsPaused)
+                    {
+                        this.ClearTimers();
+                    }
 
                     this.BrowserView = new BrowserView();
                     this.GetBrowser().Navigate(this.GetEmbedUrlFromLink(this.currentVideo.WatchPage.ToString()));
                     this.GetBrowser().Navigated += this.OnBrowserNavigated;
+
+                    this.TotalMinutes = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
+                    this.TotalSeconds = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
+                }
+                else
+                {
+                    this.TotalMinutes = null;
+                    this.TotalSeconds = null;
                 }
 
                 this.OnPropertyChanged(() => this.CurrentVideo);
-                this.OnPropertyChanged(() => this.TotalMinutes);
-                this.OnPropertyChanged(() => this.TotalSeconds);
             }
         }
+
+        /// <summary>
+        /// Gets or sets the isShuffle.
+        /// </summary>
+        /// <value>The isShuffle.</value>
+        /// <remarks></remarks>
+        public bool IsShuffle
+        {
+            get
+            {
+                return this.isShuffle;
+            }
+
+            set
+            {
+                this.isShuffle = value;
+                this.OnPropertyChanged(() => this.IsShuffle);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the isPaused.
+        /// </summary>
+        /// <value>The isPaused.</value>
+        /// <remarks></remarks>
+        public bool IsPaused
+        {
+            get
+            {
+                return this.isPaused;
+            }
+
+            set
+            {
+                this.isPaused = value;
+                this.OnPropertyChanged(() => this.IsPaused);
+            }
+        }
+
+        #endregion
+
+        #region COMMANDS
+
+        /// <summary>
+        /// Gets or sets the stop command.
+        /// </summary>
+        /// <value>
+        /// The stop command.
+        /// </value>
+        public DelegateCommand StopCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play command.
+        /// </summary>
+        /// <value>
+        /// The play command.
+        /// </value>
+        public DelegateCommand PlayCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pause command.
+        /// </summary>
+        /// <value>
+        /// The pause command.
+        /// </value>
+        public DelegateCommand PauseCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play previous song command.
+        /// </summary>
+        /// <value>
+        /// The play previous song command.
+        /// </value>
+        public DelegateCommand PlayPreviousVideoCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play next song command.
+        /// </summary>
+        /// <value>
+        /// The play next song command.
+        /// </value>
+        public DelegateCommand PlayNextVideoCommand { get; set; }
 
         #endregion
 
@@ -462,7 +598,96 @@ namespace DeskTube.ViewModels
 
         #endregion
 
+        #region COMMAND HANDLERS
+
+        /// <summary>
+        /// Handles the pause command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandlePauseCommand()
+        {
+            this.IsPaused = true;
+            this.progressTimer.Stop();
+            this.BrowserView = new BrowserView();
+        }
+
+        /// <summary>
+        /// Handles the play command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandlePlayCommand()
+        {
+            this.CurrentVideo = this.currentVideo;
+        }
+
+        /// <summary>
+        /// Handles the play next song command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandlePlayNextVideoCommand()
+        {
+            if (!this.IsShuffle)
+            {
+                this.IsPaused = false;
+                var nextVideoIndex = this.CurrentVideos.IndexOf(this.CurrentVideo) + 1;
+
+                if (nextVideoIndex < this.CurrentVideos.Count)
+                {
+                    this.CurrentVideo = this.CurrentVideos[nextVideoIndex];
+                }
+            }
+            else
+            {
+                this.PlayRandomVideo();
+            }
+        }
+
+        /// <summary>
+        /// Handles the play previous song command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandlePlayPreviousVideoCommand()
+        {
+            if (!this.IsShuffle)
+            {
+                this.IsPaused = false;
+                var previousVideoIndex = this.CurrentVideos.IndexOf(this.CurrentVideo) - 1;
+
+                if (previousVideoIndex >= 0)
+                {
+                    this.CurrentVideo = this.CurrentVideos[previousVideoIndex];
+                }
+            }
+            else
+            {
+                this.PlayRandomVideo();
+            }
+        }
+
+        /// <summary>
+        /// Handles the stop command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleStopCommand()
+        {
+            this.IsPaused = true;
+            this.ClearTimers();
+            this.BrowserView = new BrowserView();
+        }
+
+        #endregion
+
         #region PRIVATE METHODS
+
+        /// <summary>
+        /// Plays the random video.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void PlayRandomVideo()
+        {
+            this.IsPaused = false;
+            this.CurrentVideo = this.CurrentVideos[this.random.Next(0, this.CurrentVideos.Count - 1)];
+        }
 
         /// <summary>
         /// Gets the embed URL from link.
@@ -479,7 +704,7 @@ namespace DeskTube.ViewModels
                 embedUrl += startPart.Substring(0, startPart.LastIndexOf(@"/"));
                 embedUrl += "/v/";
                 embedUrl += startPart.Substring(startPart.LastIndexOf("=") + 1);
-                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1";
+                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + this.CurrentMinute * 60 + this.CurrentSecond;
                 return new Uri(embedUrl);
             }
             catch (Exception ex)
@@ -537,12 +762,13 @@ namespace DeskTube.ViewModels
         private void LoadPlaylistVideos()
         {
             this.CurrentVideos.Clear();
-            this.IsBrowserVisible = false;
 
             if (this.BrowserView != null)
             {
                 this.BrowserView.Dispose();
             }
+
+            this.IsBrowserVisible = false;
 
             this.ClearTimers();
 
@@ -590,7 +816,7 @@ namespace DeskTube.ViewModels
         private bool ShouldVideoBeDisplayed(object videoObject)
         {
             var video = (Video)videoObject;
-            return string.IsNullOrEmpty(this.SearchText) || video.Title.ToLower().Contains(this.SearchText.ToLower());
+            return string.IsNullOrEmpty(this.SearchText) || video.Title.ToLower().Contains(this.SearchText.ToLower()) || video == this.CurrentVideo;
         }
 
         /// <summary>
@@ -617,6 +843,8 @@ namespace DeskTube.ViewModels
             this.progressTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 1) };
             this.progressTimer.Tick += this.OnProgressTimerTick;
             this.progressTimer.Start();
+
+            this.IsPaused = false;
         }
 
         /// <summary>
@@ -633,8 +861,14 @@ namespace DeskTube.ViewModels
                 return;
             }
 
-            this.ClearTimers();
-            this.CurrentVideo = this.CurrentVideos[this.CurrentVideos.IndexOf(this.CurrentVideo) + 1];
+            if (this.IsShuffle)
+            {
+                this.PlayRandomVideo();
+            }
+            else
+            {
+                this.HandlePlayNextVideoCommand();
+            }
         }
 
         #endregion
@@ -656,7 +890,7 @@ namespace DeskTube.ViewModels
         public override void Dispose()
         {
             this.currentVideo = null;
-            this.currentVideos = null;
+            this.CurrentVideos = null;
             this.selectedPlaylist = null;
             this.Playlists = null;
             this.UserFeeds = null;
@@ -675,3 +909,4 @@ namespace DeskTube.ViewModels
         #endregion
     }
 }
+    

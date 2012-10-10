@@ -43,6 +43,7 @@
     <Compile Include="Converters\BoolToVisibilityInvertedConverter.cs" />
     <Compile Include="Converters\CountToVisibilityConverter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringToVisibilityConverter.cs" />
     <Compile Include="Converters\StringToVisibilityInvertedConverter.cs" />
     <Compile Include="Interfaces\INavigateObject.cs" />
     <Compile Include="Interfaces\INavigateService.cs" />

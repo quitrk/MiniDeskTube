@@ -3,15 +3,14 @@
 
     <Style TargetType="{x:Type Slider}">
         <Setter Property="Template" Value="{DynamicResource SliderControlTemplate}"/>
-
     </Style>
+    
     <ControlTemplate x:Key="SliderControlTemplate" TargetType="{x:Type Slider}">
         <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
             <Grid MinHeight="{TemplateBinding MinHeight}">
-                <Border x:Name="TrackBackground" BorderThickness="1" Background="White" BorderBrush="{DynamicResource LightGrayBrush}" 
-                        Height="16" Margin="5,0" Grid.Row="1" VerticalAlignment="Center">
-                    <Canvas Margin="-6,-1">
-                        <Rectangle x:Name="PART_SelectionRange" Fill="{DynamicResource GrayBrush}" Height="16" Visibility="Hidden" Opacity="0.6"/>
+                <Border x:Name="TrackBackground" Background="{DynamicResource DarkBlueBrush}" Height="12" Margin="5,0" Grid.Row="1" VerticalAlignment="Center">
+                    <Canvas Margin="-6,0">
+                        <Rectangle x:Name="PART_SelectionRange" Fill="{DynamicResource LightBlueBrush}" Height="12" Visibility="Hidden"/>
                     </Canvas>
                 </Border>
                 <Track x:Name="PART_Track" Grid.Row="1">
@@ -57,12 +56,12 @@
                                 <Style TargetType="{x:Type Thumb}">
                                     <Setter Property="Focusable" Value="False"/>
                                     <Setter Property="OverridesDefaultStyle" Value="True"/>
-                                    <Setter Property="Height" Value="16"/>
+                                    <Setter Property="Height" Value="12"/>
                                     <Setter Property="Width" Value="6"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border Background="{DynamicResource GrayBrush}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}"/>
+                                                <Border Background="{DynamicResource LightBlueBrush}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>

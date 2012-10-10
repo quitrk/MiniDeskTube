@@ -19,7 +19,8 @@
         </Grid.RowDefinitions>
 
         <!-- selected feed -->
-        <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}">
+        <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}"
+                 Margin="10,0">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="Horizontal"/>
@@ -52,7 +53,8 @@
 
         <!-- selected playlist -->
         <ListBox ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist}" Grid.Row="1"
-                     Visibility="{Binding ArePlaylistsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                 Margin="10,0"
+                 Visibility="{Binding ArePlaylistsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="Horizontal"/>
@@ -87,11 +89,11 @@
         </ListBox>
 
         <!-- video -->
-        <ContentControl Margin="-5,10,-5,0" Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Row="2"
+        <ContentControl Margin="0,10,0,0" Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Row="2"
                         Content="{Binding BrowserView}" x:Name="browserView"/>
 
         <!-- comments / timer -->
-        <Grid Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,10,0,0" Grid.Row="3">
+        <Grid Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="10,10,10,0" Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -102,13 +104,13 @@
             <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn">
                 <Image Source="../images/commentsIcon.png" Height="16"/>
             </Button>
-            
+
             <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
                     Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
 
-            <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightBlueBrush}" HorizontalAlignment="Center" Margin="10,0" 
+            <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="White" HorizontalAlignment="Center" Margin="10,0" 
                        Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" FontSize="12"/>
-            
+
             <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
                 <StackPanel Background="{DynamicResource DarkGrayBrush}">
                     <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
@@ -137,7 +139,7 @@
         </Grid>
 
         <!-- current videos -->
-        <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo}" Margin="0,10,0,0" Grid.Row="4">
+        <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo}" Margin="10,10,10,0" Grid.Row="4">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock FontFamily="Bell Gothic Std" Text="{Binding Title}" />
@@ -169,34 +171,37 @@
         </ListBox>
 
         <!-- filter & video controls -->
-        <Grid Grid.Row="5" Margin="0,10,0,0" Visibility="{Binding CurrentVideos.Count, Converter={StaticResource CountToVisibilityConverter}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="5" Margin="0,10,0,0" Visibility="{Binding CurrentVideos.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                Background="#252526">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"/>
+                <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"/>
 
-            <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="1">
-                <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop" Command="{Binding StopCommand}">
-                    <Image Source="../images/stopIcon.png" Height="16"/>
-                </Button>
-                <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Play" Command="{Binding PlayCommand}"
+                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="1">
+                    <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop" Command="{Binding StopCommand}">
+                        <Image Source="../images/stopIcon.png" Height="16"/>
+                    </Button>
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Play" Command="{Binding PlayCommand}"
                             Visibility="{Binding IsPaused, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Image Source="../images/playIcon.png" Height="16"/>
-                </Button>
-                <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Play" Command="{Binding PauseCommand}"
+                        <Image Source="../images/playIcon.png" Height="16"/>
+                    </Button>
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Play" Command="{Binding PauseCommand}"
                             Visibility="{Binding IsPaused, Converter={StaticResource BoolToVisibilityInvertedConverter}}">
-                    <Image Source="../images/pauseIcon.png" Height="16"/>
-                </Button>
-                <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Previous" Command="{Binding PlayPreviousVideoCommand}">
-                    <Image Source="../images/previousIcon.png" Height="16"/>
-                </Button>
-                <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Next" Command="{Binding PlayNextVideoCommand}">
-                    <Image Source="../images/nextIcon.png" Height="16"/>
-                </Button>
-                <ToggleButton Style="{DynamicResource ShuffleButtonStyle}" Margin="10,0,0,0" IsChecked="{Binding IsShuffle}"/>
-            </StackPanel>
-        </Grid>
+                        <Image Source="../images/pauseIcon.png" Height="16"/>
+                    </Button>
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Previous" Command="{Binding PlayPreviousVideoCommand}">
+                        <Image Source="../images/previousIcon.png" Height="16"/>
+                    </Button>
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" ToolTip="Next" Command="{Binding PlayNextVideoCommand}">
+                        <Image Source="../images/nextIcon.png" Height="16"/>
+                    </Button>
+                    <ToggleButton Style="{DynamicResource ShuffleButtonStyle}" Margin="10,0,0,0" IsChecked="{Binding IsShuffle}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

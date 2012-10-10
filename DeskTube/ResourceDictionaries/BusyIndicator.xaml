@@ -162,7 +162,7 @@
                         <ContentControl x:Name="content" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" 
                                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <Rectangle x:Name="overlay" Fill="#aa252525"/>
+                        <Rectangle x:Name="overlay" Fill="#22000000"/>
 
                         <Grid x:Name="busycontent">
                             <Canvas Height="40" Width="40">

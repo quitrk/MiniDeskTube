@@ -13,6 +13,8 @@ using Google.YouTube;
 using Infrastructure;
 using Infrastructure.Utilities;
 using Microsoft.Practices.Prism.Commands;
+using Google.GData.YouTube;
+using Google.GData.Extensions;
 
 namespace DeskTube.ViewModels
 {
@@ -23,6 +25,16 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region BACKING FIELDS
+
+        /// <summary>
+        /// Backing field for UserName
+        /// </summary>
+        private string userName;
+
+        /// <summary>
+        /// Backing field for UserThumbnail
+        /// </summary>
+        private string userThumbnail;
 
         /// <summary>
         /// StartupPageViewModel backing field.
@@ -66,6 +78,7 @@ namespace DeskTube.ViewModels
                     this.startupPageViewModel = new StartupPageViewModel();
                     this.startupPageViewModel.ResolveView();
                     this.startupPageViewModel.StartupPageCompleted += this.OnStartupPageCompleted;
+                    this.startupPageViewModel.UserLoggedIn += this.OnUserLoggedIn;
                     this.startupPageViewModel.PopulateData();
                 }
 
@@ -84,6 +97,44 @@ namespace DeskTube.ViewModels
             get
             {
                 return this.mainPageViewModel;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the userThumbnail.
+        /// </summary>
+        /// <value>The userThumbnail.</value>
+        /// <remarks></remarks>
+        public string UserThumbnail
+        {
+            get
+            {
+                return this.userThumbnail;
+            }
+
+            set
+            {
+                this.userThumbnail = value;
+                this.OnPropertyChanged(() => this.UserThumbnail);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the userName.
+        /// </summary>
+        /// <value>The userName.</value>
+        /// <remarks></remarks>
+        public string UserName
+        {
+            get
+            {
+                return this.userName;
+            }
+
+            set
+            {
+                this.userName = value;
+                this.OnPropertyChanged(() => this.UserName);
             }
         }
 
@@ -109,6 +160,11 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleLogoutCommand()
         {
+            this.UserThumbnail = null;
+            this.UserName = null;
+
+            this.StartupPageViewModel.IsRememberMeChecked = false;
+
             if (this.mainPageViewModel != null)
             {
                 this.mainPageViewModel.Dispose();
@@ -140,13 +196,31 @@ namespace DeskTube.ViewModels
             this.mainPageViewModel.ResolveView();
             this.mainPageViewModel.PopulateData(youtubeRequest);
             this.OnPropertyChanged(() => MainPageViewModel);
-            
+
             ((Shell)this.View).LocationChanged += OnShellLocationChanged;
-            ((Shell) this.View).Activated += this.OnShellActivated;
-            ((Shell) this.View).Deactivated += this.OnShellDeactived;
+            ((Shell)this.View).Activated += this.OnShellActivated;
+            ((Shell)this.View).Deactivated += this.OnShellDeactived;
 
             var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowMainPage"));
             storyboard.Begin();
+        }
+
+        /// <summary>
+        /// Called when [user logged in].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void OnUserLoggedIn(object sender, YouTubeRequest request)
+        {
+            var profile = (ProfileEntry)request.Service.Get("http://gdata.youtube.com/feeds/api/users/default");
+            var thumbnail = (from e in profile.ExtensionElements where e.XmlName == "thumbnail" select (XmlExtension)e).SingleOrDefault();
+            if (thumbnail != null)
+            {
+                this.UserThumbnail = thumbnail.Node.Attributes["url"].Value;
+            }
+
+            this.UserName = request.Settings.Credentials.Username;
         }
 
         /// <summary>
@@ -190,6 +264,9 @@ namespace DeskTube.ViewModels
         /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool all)
         {
+            this.startupPageViewModel.StartupPageCompleted -= this.OnStartupPageCompleted;
+            this.startupPageViewModel.UserLoggedIn -= this.OnUserLoggedIn;
+
             this.mainPageViewModel.Dispose();
             this.startupPageViewModel.Dispose();
 

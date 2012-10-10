@@ -41,6 +41,16 @@ namespace DeskTube.Views
         #region EVENT HANDLERS
 
         /// <summary>
+        /// Called when [minimize window].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        private void OnMinimizeWindow(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = System.Windows.WindowState.Minimized;
+        }
+
+        /// <summary>
         /// Called when [close window].
         /// </summary>
         /// <param name="sender">The sender.</param>

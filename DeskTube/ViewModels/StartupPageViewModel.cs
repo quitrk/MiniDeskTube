@@ -10,8 +10,11 @@ using System.Windows;
 using System.Windows.Threading;
 using DeskTube.Views;
 using Google.YouTube;
+using System.Linq;
 using Infrastructure;
 using Microsoft.Practices.Prism.Commands;
+using Google.GData.YouTube;
+using Google.GData.Extensions;
 
 namespace DeskTube.ViewModels
 {
@@ -23,6 +26,11 @@ namespace DeskTube.ViewModels
         /// Occurs when [startup page completed].
         /// </summary>
         public event EventHandler<Tuple<bool, YouTubeRequest>> StartupPageCompleted = delegate { };
+
+        /// <summary>
+        /// Occurs when [user logged in].
+        /// </summary>
+        public event EventHandler<YouTubeRequest> UserLoggedIn = delegate { };
 
         #endregion
 
@@ -89,6 +97,8 @@ namespace DeskTube.ViewModels
                 {
                     Application.Current.Properties.Clear();
                 }
+
+                this.OnPropertyChanged(() => this.IsRememberMeChecked);
             }
         }
 
@@ -178,9 +188,10 @@ namespace DeskTube.ViewModels
         {
             try
             {
-
                 var request = new YouTubeRequest(this.settings);
                 request.Service.QueryClientLoginToken();
+
+                this.UserLoggedIn(null, request);
 
                 ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -239,7 +250,6 @@ namespace DeskTube.ViewModels
 
                 this.IsLoading = true;
                 Task.Factory.StartNew(this.CheckLogin);
-
             }
             catch (Exception ex)
             {

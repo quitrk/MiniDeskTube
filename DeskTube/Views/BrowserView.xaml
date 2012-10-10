@@ -7,7 +7,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <Grid>
-        <WebBrowser x:Name="browser" Height="200" />
+        <WebBrowser x:Name="browser" Height="400" />
         <Popup PlacementTarget="{Binding ElementName=browser}" Placement="Center" IsOpen="{Binding IsOverlayActive}" StaysOpen="True" AllowsTransparency="True" x:Name="BrowserOverlay">
             <Border Background="#11000000" 
                     Width="{Binding ActualWidth, ElementName=browser}"

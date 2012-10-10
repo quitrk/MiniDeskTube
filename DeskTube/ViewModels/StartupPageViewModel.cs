@@ -194,21 +194,22 @@ namespace DeskTube.ViewModels
                 this.UserLoggedIn(null, request);
 
                 ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    this.IsLoading = false;
-                    this.StartupPageCompleted(null, new Tuple<bool, YouTubeRequest>(true, request));
+                                                                    {
+                                                                        this.StartupPageCompleted(null, new Tuple<bool, YouTubeRequest>(true, request));
 
-                    if (this.IsRememberMeChecked)
-                    {
-                        Application.Current.Properties[0] = this.IsRememberMeChecked;
-                        Application.Current.Properties[1] = this.Username;
-                        Application.Current.Properties[2] = ((StartupPageView)this.View).PasswordBox.Password;
-                    }
-                    else
-                    {
-                        Application.Current.Properties.Clear();
-                    }
-                }));
+                                                                        if (this.IsRememberMeChecked)
+                                                                        {
+                                                                            Application.Current.Properties[0] = this.IsRememberMeChecked;
+                                                                            Application.Current.Properties[1] = this.Username;
+                                                                            Application.Current.Properties[2] = ((StartupPageView)this.View).PasswordBox.Password;
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            Application.Current.Properties.Clear();
+                                                                        } 
+                    
+                                                                        this.IsLoading = false;
+                                                                    }));
             }
             catch (Exception ex)
             {

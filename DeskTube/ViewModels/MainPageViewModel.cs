@@ -108,6 +108,11 @@ namespace DeskTube.ViewModels
         /// </summary>
         private bool isBrowserVisible;
 
+        /// <summary>
+        /// Backing field for SelectedSubscription property
+        /// </summary>
+        private Subscription selectedSubscription;
+
         #endregion
 
         #region PRIVATE FIELDS
@@ -394,17 +399,20 @@ namespace DeskTube.ViewModels
 
                 this.OnPropertyChanged(() => SelectedUserFeed);
                 this.OnPropertyChanged(() => ArePlaylistsVisible);
+                this.OnPropertyChanged(() => AreSubscriptionsVisible);
 
                 switch (value)
                 {
                     case "playlists":
                         this.LoadUserPlaylists();
                         break;
-                    case "subscribtions":
+                    case "subscriptions":
                         this.LoadUserSubscriptions();
                         break;
                     case "favorites":
                         this.LoadUserFavorites();
+                        break;
+                    case "search":
                         break;
                 }
             }
@@ -433,7 +441,11 @@ namespace DeskTube.ViewModels
                 this.selectedPlaylist = value;
                 this.OnPropertyChanged(() => SelectedPlaylist);
 
-                this.LoadPlaylistVideos();
+                if (this.selectedPlaylist != null)
+                {
+                    this.SelectedSubscription = null;
+                    this.LoadPlaylistVideos();
+                }
             }
         }
 
@@ -455,6 +467,43 @@ namespace DeskTube.ViewModels
         /// The subscriptions.
         /// </value>
         public List<Subscription> Subscriptions { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the selected subscription.
+        /// </summary>
+        /// <value>
+        /// The selected subscription.
+        /// </value>
+        public Subscription SelectedSubscription
+        {
+            get
+            {
+                return this.selectedSubscription;
+            }
+
+            set
+            {
+                this.selectedSubscription = value;
+                this.OnPropertyChanged(() => this.SelectedSubscription);
+
+                if (this.selectedSubscription != null)
+                {
+                    this.SelectedPlaylist = null;
+                    this.LoadSubscriptionVideos();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [are subscriptions visible].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [are subscriptions visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AreSubscriptionsVisible
+        {
+            get { return this.SelectedUserFeed != null && this.SelectedUserFeed.Equals("subscriptions"); }
+        }
 
         /// <summary>
         /// Gets or sets the favorites.
@@ -632,13 +681,8 @@ namespace DeskTube.ViewModels
         {
             this.youtubeRequest = request;
 
-            if (this.youtubeRequest.Settings.Credentials != null)
-            {
-                this.UserFeeds = new List<string>() { "playlists", "subscribtions", "favorites" };
-                this.OnPropertyChanged(() => UserFeeds);
-
-                this.SelectedUserFeed = this.UserFeeds.First();
-            }
+            this.UserFeeds = this.youtubeRequest.Settings.Credentials != null ? new List<string>() { "playlists", "subscriptions", "favorites", "search" } : new List<string>() { "search" };
+            this.SelectedUserFeed = this.UserFeeds.First();
         }
 
         /// <summary>
@@ -835,7 +879,35 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadUserFavorites()
         {
+            this.SelectedPlaylist = null;
+            this.SelectedSubscription = null;
 
+            if (this.Favorites != null)
+            {
+                return;
+            }
+
+            this.CurrentVideos.Clear();
+
+            if (this.BrowserView != null)
+            {
+                this.BrowserView.Dispose();
+            }
+
+            this.IsBrowserVisible = false;
+
+            this.ClearTimers();
+
+            var favorites = this.youtubeRequest.GetFavoriteFeed("default");
+
+            foreach (var favorite in favorites.Entries)
+            {
+                this.CurrentVideos.Add(favorite);
+            }
+
+            this.Favorites = new List<Video>(this.CurrentVideos);
+
+            this.AddVideoFiltering();
         }
 
         /// <summary>
@@ -843,7 +915,21 @@ namespace DeskTube.ViewModels
         /// </summary>
         private void LoadUserSubscriptions()
         {
+            if (this.Subscriptions != null)
+            {
+                return;
+            }
 
+            var enumerable = this.youtubeRequest.GetSubscriptionsFeed("default").Entries as Subscription[] ??
+                             this.youtubeRequest.GetSubscriptionsFeed("default").Entries.ToArray();
+
+            if (!enumerable.Any())
+            {
+                return;
+            }
+
+            this.Subscriptions = new List<Subscription>(enumerable);
+            this.OnPropertyChanged(() => this.Subscriptions);
         }
 
         /// <summary>
@@ -856,19 +942,16 @@ namespace DeskTube.ViewModels
                 return;
             }
 
-            var enumerable = this.youtubeRequest.GetPlaylistsFeed("default").Entries as Playlist[] ?? this.youtubeRequest.GetPlaylistsFeed("default").Entries.ToArray();
+            var enumerable = this.youtubeRequest.GetPlaylistsFeed("default").Entries as Playlist[] ??
+                             this.youtubeRequest.GetPlaylistsFeed("default").Entries.ToArray();
 
             if (!enumerable.Any())
             {
                 return;
             }
 
-            this.Playlists = new List<Playlist>();
-
-            foreach (var playlist in enumerable)
-            {
-                this.Playlists.Add(playlist);
-            }
+            this.Playlists = new List<Playlist>(enumerable);
+            this.OnPropertyChanged(() => this.Playlists);
         }
 
         /// <summary>
@@ -893,6 +976,33 @@ namespace DeskTube.ViewModels
             foreach (var playListMember in playListMembers)
             {
                 this.CurrentVideos.Add(playListMember);
+            }
+
+            this.AddVideoFiltering();
+        }
+
+        /// <summary>
+        /// Loads the subscription videos.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void LoadSubscriptionVideos()
+        {
+            this.CurrentVideos.Clear();
+
+            if (this.BrowserView != null)
+            {
+                this.BrowserView.Dispose();
+            }
+
+            this.IsBrowserVisible = false;
+
+            this.ClearTimers();
+
+            var subscriptionMembers = this.youtubeRequest.GetVideoFeed(this.SelectedSubscription.UserName);
+
+            foreach (var subscriptionMember in subscriptionMembers.Entries)
+            {
+                this.CurrentVideos.Add(subscriptionMember);
             }
 
             this.AddVideoFiltering();

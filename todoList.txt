@@ -1,0 +1,31 @@
+DEVELOPMENT
+
+* implement video search
+* implement video context menu for deleting/adding from/to playlist, subscribe, (favorite ?)
+* improve comments section, implement add comment
+* add settings section 
+* think of a solution for buffering problems
+* implement video progress bar 
+* add multimedia keys support
+* add lyrics section (?)
+* add loading indicator for playlist / subscription	 / favorites
+* mimize to system tray
+
+BUGS
+
+* Volume control is inaccurate when < 10%
+* favorites section gets reloaded when clicked even if the song currently playing is a member of it.
+* Fix player overlay (you've no idea what I'm talking about).
+* when first selecting a video, it will first created the browser container and then select other video.
+
+DESIGN
+
+* remove FocusVisualStyle from..everywhere
+* implement alternative skin
+* add buttons animation 
+* brighten up the busy indicator
+
+REFACTORING
+
+* analyze solution, dispose resources when needed
+* investigate security

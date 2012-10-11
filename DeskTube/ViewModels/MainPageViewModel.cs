@@ -154,6 +154,7 @@ namespace DeskTube.ViewModels
             this.StopCommand = new DelegateCommand(this.HandleStopCommand);
             this.ViewCommentsCommand = new DelegateCommand(this.HandleViewCommentsCommand);
             this.SelectVideoCommand = new DelegateCommand<Video>(this.HandleSelectVideoCommand);
+            this.RemoveVideoCommand = new DelegateCommand<Video>(this.HandleRemoveVideoCommand);
         }
 
         #endregion
@@ -444,6 +445,7 @@ namespace DeskTube.ViewModels
                 if (this.selectedPlaylist != null)
                 {
                     this.SelectedSubscription = null;
+                    this.Favorites = null;
                     this.LoadPlaylistVideos();
                 }
             }
@@ -489,6 +491,7 @@ namespace DeskTube.ViewModels
                 if (this.selectedSubscription != null)
                 {
                     this.SelectedPlaylist = null;
+                    this.Favorites = null;
                     this.LoadSubscriptionVideos();
                 }
             }
@@ -670,6 +673,14 @@ namespace DeskTube.ViewModels
         /// </value>
         public DelegateCommand<Video> SelectVideoCommand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the remove video command.
+        /// </summary>
+        /// <value>
+        /// The remove video command.
+        /// </value>
+        public DelegateCommand<Video> RemoveVideoCommand { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -751,6 +762,10 @@ namespace DeskTube.ViewModels
                 {
                     this.PlayVideo(this.CurrentVideos[nextVideoIndex]);
                 }
+                else
+                {
+                    this.PlayVideo(this.CurrentVideos.First());
+                }
             }
             else
             {
@@ -799,6 +814,16 @@ namespace DeskTube.ViewModels
         private void HandleSelectVideoCommand(Video video)
         {
             this.PlayVideo(video);
+        }
+
+        /// <summary>
+        /// Handles the remove video command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleRemoveVideoCommand(Video video)
+        {
+            
         }
 
         #endregion
@@ -881,11 +906,6 @@ namespace DeskTube.ViewModels
         {
             this.SelectedPlaylist = null;
             this.SelectedSubscription = null;
-
-            if (this.Favorites != null)
-            {
-                return;
-            }
 
             this.CurrentVideos.Clear();
 

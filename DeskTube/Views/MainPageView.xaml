@@ -8,6 +8,30 @@
              xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure" mc:Ignorable="d"
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
 
+    <UserControl.Resources>
+        <ContextMenu x:Key="VideoContextMenu">
+            <MenuItem Header="Add to" ItemsSource="{Binding DataContext.Playlists, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <MenuItem.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="-10">
+                            <MenuItem Header="{Binding Title}"/>
+                            <Separator Margin="0,0,-23,0"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </MenuItem.ItemTemplate>
+            </MenuItem>
+            <Separator />
+
+            <MenuItem Header="Remove" Command="{Binding DataContext.RemoveVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+            <Separator />
+
+            <MenuItem Header="Subscribe"/>
+            <Separator />
+
+            <MenuItem Header="Favorite"/>
+        </ContextMenu>
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -87,7 +111,7 @@
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
-       
+
         <!-- subscriptions -->
         <ListBox ItemsSource="{Binding Subscriptions}" SelectedItem="{Binding SelectedSubscription}" Grid.Row="1"
                  Margin="10,0"
@@ -121,7 +145,7 @@
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
-        
+
         <!-- video -->
         <ContentControl Margin="0,10,0,0" Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Row="2"
                         Content="{Binding BrowserView}" x:Name="browserView"/>
@@ -155,7 +179,7 @@
                                     <StackPanel Margin="0,0,20,0">
                                         <TextBlock Text="{Binding Author}" Foreground="{DynamicResource LightBlueBrush}" />
                                         <TextBlock Text="{Binding Content}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="White"/>
-                                        
+
                                         <Path Style="{DynamicResource LineStyle}" Stroke="{DynamicResource GrayBrush}" />
                                     </StackPanel>
                                 </DataTemplate>
@@ -168,22 +192,23 @@
                 </Popup>
 
                 <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightGrayBrush}" VerticalAlignment="Bottom" FontSize="12">
-                <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
-                <Run Text="/"/>
-                <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>
+                    <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
+                    <Run Text="/"/>
+                    <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>
                 </TextBlock>
             </Grid>
         </Border>
-        
+
         <!-- current videos -->
         <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo}" Margin="10,10,10,0" Grid.Row="4">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock FontFamily="Bell Gothic Std" Text="{Binding Title}" />
+                    <TextBlock FontFamily="Bell Gothic Std" Text="{Binding Title}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
+                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnListBoxItemPreviewMouseRightButtonDown" />
                     <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}" />
                     <Setter Property="Template">
                         <Setter.Value>
@@ -203,6 +228,7 @@
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
+                    <Setter Property="ContextMenu" Value="{StaticResource VideoContextMenu}"/>
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>

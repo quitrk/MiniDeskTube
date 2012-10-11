@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using Infrastructure;
 using Infrastructure.Interfaces;
 using mshtml;
@@ -32,6 +33,20 @@ namespace DeskTube.Views
         public void SetDataContext(ViewModelBase dataContext)
         {
             this.DataContext = dataContext;
+        }
+
+        #endregion
+
+        #region EVENT HANDLERS
+
+        /// <summary>
+        /// Called when [list box item preview mouse right button down]. Disables right click item selection.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
+        private void OnListBoxItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
         }
 
         #endregion

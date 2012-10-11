@@ -9,6 +9,7 @@
                 <ResourceDictionary Source="ResourceDictionaries/BusyIndicator.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/Button.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/CheckBox.xaml"/>
+                <ResourceDictionary Source="ResourceDictionaries/ContextMenu.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/Converters.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/ListBox.xaml"/>
                 <ResourceDictionary Source="ResourceDictionaries/Miscellaenous.xaml"/>

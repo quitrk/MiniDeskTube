@@ -9,29 +9,66 @@
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
 
     <UserControl.Resources>
-        <ContextMenu x:Key="VideoContextMenu">
-            <MenuItem Header="Add to" ItemsSource="{Binding DataContext.Playlists, RelativeSource={RelativeSource AncestorType=UserControl}}">
+        <ContextMenu x:Key="VideoContextMenu" 
+                     Visibility="{Binding DataContext.IsUserAuthenticated, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <!-- add to -->
+            <MenuItem Header="Add to" 
+                          Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}}"
+                          ItemsSource="{Binding DataContext.AvailablePlaylistsForAddVideo, RelativeSource={RelativeSource AncestorType=UserControl}}">
                 <MenuItem.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="-10">
-                            <MenuItem Header="{Binding Title}"/>
-                            <Separator Margin="0,0,-23,0"/>
+                            <Separator Margin="0,0,-23,0" x:Name="separator"/>
+
+                            <MenuItem Header="{Binding Title}"
+                                      Command="{Binding DataContext.AddVideoToPlaylistCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                <MenuItem.CommandParameter>
+                                    <MultiBinding Converter="{StaticResource AddVideoToPlaylistConverter}">
+                                        <Binding />
+                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=ContextMenu}"/>
+                                    </MultiBinding>
+                                </MenuItem.CommandParameter>
+                            </MenuItem>
                         </StackPanel>
+
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                                <Setter Property="Visibility" TargetName="separator" Value="Collapsed"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </MenuItem.ItemTemplate>
             </MenuItem>
-            <Separator />
 
-            <MenuItem Header="Remove" Command="{Binding DataContext.RemoveVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-            <Separator />
+            <Separator Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}}"/>
 
-            <MenuItem Header="Subscribe"/>
-            <Separator />
+            <!-- remove -->
+            <MenuItem Header="Remove"
+                      Visibility="{Binding DataContext.CanRemoveVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Command="{Binding DataContext.RemoveVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
 
-            <MenuItem Header="Favorite"/>
+            <Separator Visibility="{Binding DataContext.CanRemoveVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <!-- subscribe -->
+            <MenuItem Visibility="{Binding DataContext.CanSubscribe, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Command="{Binding DataContext.AddSubscriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }">
+                <MenuItem.Header>
+                    <TextBlock>
+                        <Run Text="Subscribe to"/>
+                        <Run Text="{Binding Uploader}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <Separator Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+            <MenuItem Header="Favorite"
+                      Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Command="{Binding DataContext.AddFavoriteVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
         </ContextMenu>
     </UserControl.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -213,13 +250,15 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <ContentPresenter Margin="0,3">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                            <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </ContentPresenter>
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter Margin="0,3">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ContentPresenter>
+                                </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource LightBlueBrush}" />

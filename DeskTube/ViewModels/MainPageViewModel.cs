@@ -11,6 +11,8 @@ using System.Windows.Data;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using DeskTube.Views;
+using Google.GData.Client;
+using Google.GData.YouTube;
 using Google.YouTube;
 using Infrastructure;
 using Infrastructure.Utilities;
@@ -155,11 +157,61 @@ namespace DeskTube.ViewModels
             this.ViewCommentsCommand = new DelegateCommand(this.HandleViewCommentsCommand);
             this.SelectVideoCommand = new DelegateCommand<Video>(this.HandleSelectVideoCommand);
             this.RemoveVideoCommand = new DelegateCommand<Video>(this.HandleRemoveVideoCommand);
+            this.AddVideoToPlaylistCommand = new DelegateCommand<Tuple<Playlist, Video>>(this.HandleAddVideoToPlaylistCommand);
+            this.AddFavoriteVideoCommand = new DelegateCommand<Video>(this.HandleAddFavoriteVideoCommand);
+            this.AddSubscriptionCommand = new DelegateCommand<Video>(this.HandleAddSubscriptionCommand);
         }
 
         #endregion
 
         #region PROPERTIES
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can user add favorite video.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance can user add favorite video; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAddFavoriteVideo
+        {
+            get
+            {
+                return !this.SelectedUserFeed.Equals("favorites");
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can user remove video.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance can user remove video; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanRemoveVideo
+        {
+            get { return this.SelectedUserFeed.Equals("favorites") || this.SelectedUserFeed.Equals("playlists"); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can subscribe.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance can subscribe; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanSubscribe
+        {
+            get { return !this.SelectedUserFeed.Equals("subscriptions"); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is user authenticated.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is user authenticated; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsUserAuthenticated
+        {
+            get { return this.youtubeRequest != null && this.youtubeRequest.Settings.Credentials != null; }
+        }
 
         /// <summary>
         /// Gets or sets the volume level.
@@ -392,15 +444,21 @@ namespace DeskTube.ViewModels
         /// </value>
         public string SelectedUserFeed
         {
-            get { return this.selectedUserFeed; }
+            get
+            {
+                return this.selectedUserFeed;
+            }
 
             set
             {
                 this.selectedUserFeed = value;
 
-                this.OnPropertyChanged(() => SelectedUserFeed);
-                this.OnPropertyChanged(() => ArePlaylistsVisible);
-                this.OnPropertyChanged(() => AreSubscriptionsVisible);
+                this.OnPropertyChanged(() => this.SelectedUserFeed);
+                this.OnPropertyChanged(() => this.ArePlaylistsVisible);
+                this.OnPropertyChanged(() => this.AreSubscriptionsVisible);
+                this.OnPropertyChanged(() => this.CanRemoveVideo);
+                this.OnPropertyChanged(() => this.CanAddFavoriteVideo);
+                this.OnPropertyChanged(() => this.CanSubscribe);
 
                 switch (value)
                 {
@@ -420,6 +478,17 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
+        /// Gets the available playlists for add video.
+        /// </summary>
+        /// <value>
+        /// The available playlists for add video.
+        /// </value>
+        public List<Playlist> AvailablePlaylistsForAddVideo
+        {
+            get { return this.Playlists != null ? new List<Playlist>(this.Playlists.Where(p => p != this.SelectedPlaylist)) : null; }
+        }
+
+        /// <summary>
         /// Gets the playlists.
         /// </summary>
         /// <value>
@@ -435,19 +504,25 @@ namespace DeskTube.ViewModels
         /// </value>
         public Playlist SelectedPlaylist
         {
-            get { return this.selectedPlaylist; }
+            get
+            {
+                return this.selectedPlaylist;
+            }
 
             set
             {
                 this.selectedPlaylist = value;
-                this.OnPropertyChanged(() => SelectedPlaylist);
+                this.OnPropertyChanged(() => this.SelectedPlaylist);
+                this.OnPropertyChanged(() => this.AvailablePlaylistsForAddVideo);
 
-                if (this.selectedPlaylist != null)
+                if (this.selectedPlaylist == null)
                 {
-                    this.SelectedSubscription = null;
-                    this.Favorites = null;
-                    this.LoadPlaylistVideos();
+                    return;
                 }
+
+                this.SelectedSubscription = null;
+                this.Favorites = null;
+                this.LoadPlaylistVideos();
             }
         }
 
@@ -681,6 +756,30 @@ namespace DeskTube.ViewModels
         /// </value>
         public DelegateCommand<Video> RemoveVideoCommand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the add video to playlist command.
+        /// </summary>
+        /// <value>
+        /// The add video to playlist command.
+        /// </value>
+        public DelegateCommand<Tuple<Playlist, Video>> AddVideoToPlaylistCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the add favorite video command.
+        /// </summary>
+        /// <value>
+        /// The add favorite video command.
+        /// </value>
+        public DelegateCommand<Video> AddFavoriteVideoCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the add subscription command.
+        /// </summary>
+        /// <value>
+        /// The add subscription command.
+        /// </value>
+        public DelegateCommand<Video> AddSubscriptionCommand { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -692,7 +791,9 @@ namespace DeskTube.ViewModels
         {
             this.youtubeRequest = request;
 
-            this.UserFeeds = this.youtubeRequest.Settings.Credentials != null ? new List<string>() { "playlists", "subscriptions", "favorites", "search" } : new List<string>() { "search" };
+            this.OnPropertyChanged(() => this.IsUserAuthenticated);
+
+            this.UserFeeds = this.IsUserAuthenticated ? new List<string>() { "playlists", "subscriptions", "favorites", "search" } : new List<string>() { "search" };
             this.SelectedUserFeed = this.UserFeeds.First();
         }
 
@@ -823,7 +924,60 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleRemoveVideoCommand(Video video)
         {
-            
+            video.AtomEntry.EditUri = video.Self;
+            this.youtubeRequest.Delete(video);
+        }
+
+        /// <summary>
+        /// Handles the add video to playlist command.
+        /// </summary>
+        /// <param name="tuple">The tuple.</param>
+        private void HandleAddVideoToPlaylistCommand(Tuple<Playlist, Video> tuple)
+        {
+            var playlistMember = new PlayListMember { VideoId = tuple.Item2.VideoId };
+            this.youtubeRequest.AddToPlaylist(tuple.Item1, playlistMember);
+        }
+
+        /// <summary>
+        /// Handles the add favorite video command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleAddFavoriteVideoCommand(Video video)
+        {
+            var videoEntry = (YouTubeEntry)this.youtubeRequest.Service.Get(video.Self);
+
+            try
+            {
+                this.youtubeRequest.Service.Insert(new Uri("http://gdata.youtube.com/feeds/api/users/default/favorites"), videoEntry);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("The video is already in your favorites list.");
+            }
+        }
+
+        /// <summary>
+        /// Handles the add subscription command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleAddSubscriptionCommand(Video video)
+        {
+            var subscription = new Subscription
+                                   {
+                                       Type = SubscriptionEntry.SubscriptionType.channel,
+                                       UserName = video.Uploader
+                                   };
+
+            try
+            {
+                youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("You are already subscribed to this channel.");
+            }
         }
 
         #endregion
@@ -992,7 +1146,6 @@ namespace DeskTube.ViewModels
             this.ClearTimers();
 
             var playListMembers = this.youtubeRequest.GetPlaylist(this.SelectedPlaylist).Entries;
-
             foreach (var playListMember in playListMembers)
             {
                 this.CurrentVideos.Add(playListMember);

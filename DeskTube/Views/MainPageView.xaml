@@ -61,7 +61,7 @@
                 </MenuItem.Header>
             </MenuItem>
 
-            <Separator Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Separator Visibility="{Binding DataContext.CanSubscribe, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <MenuItem Header="Favorite"
                       Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -79,39 +79,38 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- selected feed -->
-        <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}"
-                 Margin="10,0">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock FontFamily="Century Gothic" FontSize="18" Text="{Binding }" Margin="0,0,10,0"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
-                    <Setter Property="Cursor" Value="Hand"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <ContentPresenter />
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
-
+            <!-- user feeds -->
+            <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}" Margin="10,0">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock FontFamily="Century Gothic" FontSize="18" Text="{Binding }" Margin="0,0,10,0"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                    <ContentPresenter />
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+        
         <!-- playlists -->
         <ListBox ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist}" Grid.Row="1"
                  Margin="10,0"
@@ -250,7 +249,7 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <Border Background="{TemplateBinding Background}">
+                                <Border BorderThickness="0,1" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
                                     <ContentPresenter Margin="0,3">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
@@ -262,6 +261,9 @@
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource LightBlueBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -277,13 +279,42 @@
                 Background="{DynamicResource SecondaryBackgroundBrush}">
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"/>
+                <Button Command="{Binding SyncCommand}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Padding" Value="3"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSynced}" Value="True">
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Synced"/>
+                                                <Image Source="../images/checkedIcon.png" Grid.Column="1" VerticalAlignment="Center" Height="14" Margin="10,0,0,0"/>
+                                            </Grid>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSynced}" Value="False">
+                                    <Setter Property="Content" Value="Sync now"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
-                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="1">
+                <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"
+                         Grid.Column="1" Margin="10,0,0,0"/>
+
+                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="2"> 
                     <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop" Command="{Binding StopCommand}">
                         <Image Source="../images/stopIcon.png" Height="16"/>
                     </Button>

@@ -1,7 +1,7 @@
 DEVELOPMENT
 
 * implement video search
-* implement video context menu for deleting/adding from/to playlist, subscribe, (favorite ?)
+* implement video context menu for deleting/adding from/to playlist, subscribe, (favorite ?) 
 * improve comments section, implement add comment
 * add settings section 
 * think of a solution for buffering problems
@@ -10,6 +10,8 @@ DEVELOPMENT
 * add lyrics section (?)
 * add loading indicator for playlist / subscription	 / favorites
 * mimize to system tray
+* login on Enter key
+* remove subscriptions
 
 BUGS
 

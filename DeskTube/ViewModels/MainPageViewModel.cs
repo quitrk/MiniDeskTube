@@ -115,6 +115,11 @@ namespace DeskTube.ViewModels
         /// </summary>
         private Subscription selectedSubscription;
 
+        /// <summary>
+        /// Backing field for IsSynced property.
+        /// </summary>
+        private bool isSynced = true;
+        
         #endregion
 
         #region PRIVATE FIELDS
@@ -149,6 +154,7 @@ namespace DeskTube.ViewModels
             this.CurrentVideos = new ObservableCollection<Video>();
             this.CurrentVideoComments = new ObservableCollection<Comment>();
 
+            this.SyncCommand = new DelegateCommand(this.HandleSyncCommand, () => !this.IsSynced);
             this.PauseCommand = new DelegateCommand(this.HandlePauseCommand);
             this.PlayCommand = new DelegateCommand(this.HandlePlayCommand);
             this.PlayNextVideoCommand = new DelegateCommand(this.HandlePlayNextVideoCommand);
@@ -165,6 +171,27 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region PROPERTIES
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is synced.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is synced; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSynced
+        {
+            get
+            {
+                return this.isSynced;
+            }
+
+            set
+            {
+                this.isSynced = value;
+                this.OnPropertyChanged(() => this.IsSynced);
+                this.SyncCommand.RaiseCanExecuteChanged();
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this instance can user add favorite video.
@@ -693,6 +720,14 @@ namespace DeskTube.ViewModels
         #region COMMANDS
 
         /// <summary>
+        /// Gets or sets the sync command.
+        /// </summary>
+        /// <value>
+        /// The sync command.
+        /// </value>
+        public DelegateCommand SyncCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the view comments command.
         /// </summary>
         /// <value>
@@ -802,7 +837,10 @@ namespace DeskTube.ViewModels
         /// </summary>
         public void ActivateOverlay()
         {
-            this.IsOverlayActive = true;
+            if(this.CurrentVideo != null)
+            {
+                this.IsOverlayActive = true;
+            }
         }
 
         /// <summary>
@@ -816,6 +854,67 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region COMMAND HANDLERS
+        
+        /// <summary>
+        /// Handles the sync command.
+        /// </summary>
+        private void HandleSyncCommand()
+        {
+            this.CurrentVideos.Clear();
+
+            if (this.BrowserView != null)
+            {
+                this.BrowserView.Dispose();
+            }
+
+            this.IsBrowserVisible = false;
+
+            this.ClearTimers();
+
+            var currentUserFeed = this.SelectedUserFeed;
+            
+            if(currentUserFeed.Equals("playlists"))
+            {
+                var currentPlaylistId = this.SelectedPlaylist != null ? this.SelectedPlaylist.Id : null;
+                
+                this.Subscriptions = null;
+                this.Playlists = null;
+                this.Favorites = null;
+
+                this.SelectedUserFeed = currentUserFeed;
+                this.SelectedPlaylist = this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId);
+
+            }
+            else if(currentUserFeed.Equals("subscriptions"))
+            {
+                var currentSubscriptionId = this.SelectedSubscription != null ? this.SelectedSubscription.Id : null;
+
+                this.Subscriptions = null;
+                this.Playlists = null;
+                this.Favorites = null;
+
+                this.SelectedUserFeed = currentUserFeed;
+                this.SelectedSubscription = this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId);
+                
+                this.LoadUserPlaylists();
+            }
+            else if(currentUserFeed.Equals("favorites"))
+            {
+                this.Subscriptions = null;
+                this.Playlists = null;
+                this.Favorites = null;
+
+                this.SelectedUserFeed = currentUserFeed;
+                
+                this.LoadUserPlaylists();
+            }
+            else if(currentUserFeed.Equals("search"))
+            {
+                
+            }
+
+            this.IsSynced = true;
+        }
 
         /// <summary>
         /// Handles the view comments command.
@@ -925,7 +1024,8 @@ namespace DeskTube.ViewModels
         private void HandleRemoveVideoCommand(Video video)
         {
             video.AtomEntry.EditUri = video.Self;
-            this.youtubeRequest.Delete(video);
+            this.youtubeRequest.Delete(video); 
+            this.IsSynced = false;
         }
 
         /// <summary>
@@ -936,6 +1036,7 @@ namespace DeskTube.ViewModels
         {
             var playlistMember = new PlayListMember { VideoId = tuple.Item2.VideoId };
             this.youtubeRequest.AddToPlaylist(tuple.Item1, playlistMember);
+            this.IsSynced = false;
         }
 
         /// <summary>
@@ -950,6 +1051,7 @@ namespace DeskTube.ViewModels
             try
             {
                 this.youtubeRequest.Service.Insert(new Uri("http://gdata.youtube.com/feeds/api/users/default/favorites"), videoEntry);
+                this.IsSynced = false;
             }
             catch (Exception ex)
             {
@@ -972,7 +1074,8 @@ namespace DeskTube.ViewModels
 
             try
             {
-                youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription);
+                youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription); 
+                this.IsSynced = false;
             }
             catch (Exception)
             {
@@ -1126,6 +1229,7 @@ namespace DeskTube.ViewModels
 
             this.Playlists = new List<Playlist>(enumerable);
             this.OnPropertyChanged(() => this.Playlists);
+            this.OnPropertyChanged(() => this.AvailablePlaylistsForAddVideo);
         }
 
         /// <summary>

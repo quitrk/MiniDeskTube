@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using DeskTube.Views;
@@ -101,7 +102,12 @@ namespace DeskTube.ViewModels
         private ObservableCollection<Video> currentVideos;
 
         /// <summary>
-        /// Backing field for SearchText property
+        /// Backing field for FilterText property
+        /// </summary>
+        private string filterText;
+
+        /// <summary>
+        /// Backing field for SearchText
         /// </summary>
         private string searchText;
 
@@ -119,7 +125,7 @@ namespace DeskTube.ViewModels
         /// Backing field for IsSynced property.
         /// </summary>
         private bool isSynced = true;
-        
+
         #endregion
 
         #region PRIVATE FIELDS
@@ -166,6 +172,7 @@ namespace DeskTube.ViewModels
             this.AddVideoToPlaylistCommand = new DelegateCommand<Tuple<Playlist, Video>>(this.HandleAddVideoToPlaylistCommand);
             this.AddFavoriteVideoCommand = new DelegateCommand<Video>(this.HandleAddFavoriteVideoCommand);
             this.AddSubscriptionCommand = new DelegateCommand<Video>(this.HandleAddSubscriptionCommand);
+            this.SearchCommand = new DelegateCommand<KeyEventArgs>(this.HandleSearchCommand);
         }
 
         #endregion
@@ -201,10 +208,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool CanAddFavoriteVideo
         {
-            get
-            {
-                return !this.SelectedUserFeed.Equals("favorites");
-            }
+            get { return this.IsUserAuthenticated && (this.SelectedUserFeed == null || !this.SelectedUserFeed.Equals("favorites")); }
         }
 
         /// <summary>
@@ -215,7 +219,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool CanRemoveVideo
         {
-            get { return this.SelectedUserFeed.Equals("favorites") || this.SelectedUserFeed.Equals("playlists"); }
+            get { return this.IsUserAuthenticated && this.SelectedUserFeed != null && (this.SelectedUserFeed.Equals("favorites") || this.SelectedUserFeed.Equals("playlists")); }
         }
 
         /// <summary>
@@ -226,7 +230,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool CanSubscribe
         {
-            get { return !this.SelectedUserFeed.Equals("subscriptions"); }
+            get { return this.IsUserAuthenticated && (this.SelectedUserFeed == null || !this.SelectedUserFeed.Equals("subscriptions")); }
         }
 
         /// <summary>
@@ -419,19 +423,38 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets the search text.
+        /// Gets or sets the searchText.
         /// </summary>
-        /// <value>
-        /// The search text.
-        /// </value>
+        /// <value>The searchText.</value>
+        /// <remarks></remarks>
         public string SearchText
         {
-            get { return this.searchText; }
+            get
+            {
+                return this.searchText;
+            }
 
             set
             {
                 this.searchText = value;
                 this.OnPropertyChanged(() => this.SearchText);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the search text.
+        /// </summary>
+        /// <value>
+        /// The search text.
+        /// </value>
+        public string FilterText
+        {
+            get { return this.filterText; }
+
+            set
+            {
+                this.filterText = value;
+                this.OnPropertyChanged(() => this.FilterText);
                 this.FilteredCurrentVideos.Refresh();
             }
         }
@@ -498,8 +521,6 @@ namespace DeskTube.ViewModels
                     case "favorites":
                         this.LoadUserFavorites();
                         break;
-                    case "search":
-                        break;
                 }
             }
         }
@@ -561,7 +582,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool ArePlaylistsVisible
         {
-            get { return this.SelectedUserFeed != null && this.SelectedUserFeed.Equals("playlists"); }
+            get { return !string.IsNullOrEmpty(this.SelectedUserFeed) && this.SelectedUserFeed.Equals("playlists"); }
         }
 
         /// <summary>
@@ -607,7 +628,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool AreSubscriptionsVisible
         {
-            get { return this.SelectedUserFeed != null && this.SelectedUserFeed.Equals("subscriptions"); }
+            get { return !string.IsNullOrEmpty(this.SelectedUserFeed) && this.SelectedUserFeed.Equals("subscriptions"); }
         }
 
         /// <summary>
@@ -815,6 +836,14 @@ namespace DeskTube.ViewModels
         /// </value>
         public DelegateCommand<Video> AddSubscriptionCommand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the search command.
+        /// </summary>
+        /// <value>
+        /// The search command.
+        /// </value>
+        public DelegateCommand<KeyEventArgs> SearchCommand { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -828,8 +857,14 @@ namespace DeskTube.ViewModels
 
             this.OnPropertyChanged(() => this.IsUserAuthenticated);
 
-            this.UserFeeds = this.IsUserAuthenticated ? new List<string>() { "playlists", "subscriptions", "favorites", "search" } : new List<string>() { "search" };
-            this.SelectedUserFeed = this.UserFeeds.First();
+            this.UserFeeds = this.IsUserAuthenticated
+                                 ? new List<string>() { "playlists", "subscriptions", "favorites" }
+                                 : null;
+
+            if (this.UserFeeds != null)
+            {
+                this.SelectedUserFeed = this.UserFeeds.First();
+            }
         }
 
         /// <summary>
@@ -837,7 +872,7 @@ namespace DeskTube.ViewModels
         /// </summary>
         public void ActivateOverlay()
         {
-            if(this.CurrentVideo != null)
+            if (this.CurrentVideo != null)
             {
                 this.IsOverlayActive = true;
             }
@@ -854,7 +889,7 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region COMMAND HANDLERS
-        
+
         /// <summary>
         /// Handles the sync command.
         /// </summary>
@@ -872,11 +907,11 @@ namespace DeskTube.ViewModels
             this.ClearTimers();
 
             var currentUserFeed = this.SelectedUserFeed;
-            
-            if(currentUserFeed.Equals("playlists"))
+
+            if (currentUserFeed.Equals("playlists"))
             {
                 var currentPlaylistId = this.SelectedPlaylist != null ? this.SelectedPlaylist.Id : null;
-                
+
                 this.Subscriptions = null;
                 this.Playlists = null;
                 this.Favorites = null;
@@ -885,7 +920,7 @@ namespace DeskTube.ViewModels
                 this.SelectedPlaylist = this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId);
 
             }
-            else if(currentUserFeed.Equals("subscriptions"))
+            else if (currentUserFeed.Equals("subscriptions"))
             {
                 var currentSubscriptionId = this.SelectedSubscription != null ? this.SelectedSubscription.Id : null;
 
@@ -895,22 +930,22 @@ namespace DeskTube.ViewModels
 
                 this.SelectedUserFeed = currentUserFeed;
                 this.SelectedSubscription = this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId);
-                
+
                 this.LoadUserPlaylists();
             }
-            else if(currentUserFeed.Equals("favorites"))
+            else if (currentUserFeed.Equals("favorites"))
             {
                 this.Subscriptions = null;
                 this.Playlists = null;
                 this.Favorites = null;
 
                 this.SelectedUserFeed = currentUserFeed;
-                
+
                 this.LoadUserPlaylists();
             }
-            else if(currentUserFeed.Equals("search"))
+            else if (currentUserFeed.Equals("search"))
             {
-                
+
             }
 
             this.IsSynced = true;
@@ -1024,7 +1059,7 @@ namespace DeskTube.ViewModels
         private void HandleRemoveVideoCommand(Video video)
         {
             video.AtomEntry.EditUri = video.Self;
-            this.youtubeRequest.Delete(video); 
+            this.youtubeRequest.Delete(video);
             this.IsSynced = false;
         }
 
@@ -1074,12 +1109,57 @@ namespace DeskTube.ViewModels
 
             try
             {
-                youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription); 
+                youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription);
                 this.IsSynced = false;
             }
             catch (Exception)
             {
                 MessageBox.Show("You are already subscribed to this channel.");
+            }
+        }
+
+        /// <summary>
+        /// Handles the search command.
+        /// </summary>
+        /// <param name="eventArgs">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSearchCommand(KeyEventArgs eventArgs)
+        {
+            if (eventArgs.Key == Key.Enter && !string.IsNullOrEmpty(this.SearchText))
+            {
+                this.CurrentVideos.Clear();
+
+                this.SelectedUserFeed = null;
+                this.SelectedPlaylist = null;
+                this.SelectedSubscription = null;
+                this.Favorites = null;
+
+                if (this.BrowserView != null)
+                {
+                    this.BrowserView.Dispose();
+                }
+
+                this.IsBrowserVisible = false;
+
+                this.ClearTimers();
+
+                this.youtubeRequest.Settings.AutoPaging = false;
+                this.youtubeRequest.Settings.PageSize = 50;
+
+                var query = new YouTubeQuery(YouTubeQuery.DefaultVideoUri)
+                                {
+                                    OrderBy = "relevance",
+                                    Query = this.SearchText,
+                                    SafeSearch = YouTubeQuery.SafeSearchValues.None
+                                };
+
+                this.CurrentVideos = new ObservableCollection<Video>(youtubeRequest.Get<Video>(query).Entries);
+
+                this.youtubeRequest.Settings.AutoPaging = true;
+
+                this.AddVideoFiltering();
+
+                this.SearchText = null;
             }
         }
 
@@ -1319,7 +1399,7 @@ namespace DeskTube.ViewModels
         private bool ShouldVideoBeDisplayed(object videoObject)
         {
             var video = (Video)videoObject;
-            return string.IsNullOrEmpty(this.SearchText) || video.Title.ToLower().Contains(this.SearchText.ToLower()) || video == this.CurrentVideo;
+            return string.IsNullOrEmpty(this.FilterText) || video.Title.ToLower().Contains(this.FilterText.ToLower()) || video == this.CurrentVideo;
         }
 
         /// <summary>

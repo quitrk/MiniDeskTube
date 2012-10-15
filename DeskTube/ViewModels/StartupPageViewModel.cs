@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using DeskTube.Views;
 using Google.YouTube;
@@ -61,6 +63,7 @@ namespace DeskTube.ViewModels
         {
             this.GoToNewAccountPageCommand = new DelegateCommand(this.HandleGoToNewAccountPageCommand);
             this.LoginCommand = new DelegateCommand(this.HandleLoginCommand);
+            this.LoginOnEnterCommand = new DelegateCommand<KeyEventArgs>(this.HandleLoginOnEnterCommand);
             this.SkipLoginCommand = new DelegateCommand(this.HandleSkipLoginCommand);
         }
 
@@ -123,6 +126,14 @@ namespace DeskTube.ViewModels
         public DelegateCommand LoginCommand { get; set; }
 
         /// <summary>
+        /// Gets or sets the login on enter command.
+        /// </summary>
+        /// <value>
+        /// The login on enter command.
+        /// </value>
+        public DelegateCommand<KeyEventArgs> LoginOnEnterCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the skip login command.
         /// </summary>
         /// <value>
@@ -164,16 +175,19 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleLoginCommand()
         {
-            try
+            this.Login();
+        }
+
+        /// <summary>
+        /// Handles the login on enter command.
+        /// </summary>
+        /// <param name="eventArgs">The <see cref="KeyEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleLoginOnEnterCommand(KeyEventArgs eventArgs)
+        {
+            if (eventArgs.Key == Key.Enter)
             {
-                var password = ((StartupPageView)this.View).PasswordBox.Password;
-                this.settings = new YouTubeRequestSettings("DeskTube", ConfigurationManager.AppSettings["DeveloperKey"], this.Username, password) { AutoPaging = true };
-                this.IsLoading = true;
-                Task.Factory.StartNew(this.CheckLogin);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+                this.Login();
             }
         }
 
@@ -206,14 +220,33 @@ namespace DeskTube.ViewModels
                                                                         else
                                                                         {
                                                                             Application.Current.Properties.Clear();
-                                                                        } 
-                    
+                                                                        }
+
                                                                         this.IsLoading = false;
                                                                     }));
             }
             catch (Exception ex)
             {
                 this.IsLoading = false;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Logins this instance.
+        /// </summary>
+        private void Login()
+        {
+            try
+            {
+                var password = ((StartupPageView)this.View).PasswordBox.Password;
+                this.settings = new YouTubeRequestSettings("DeskTube", ConfigurationManager.AppSettings["DeveloperKey"],
+                                                           this.Username, password) { AutoPaging = true };
+                this.IsLoading = true;
+                Task.Factory.StartNew(this.CheckLogin);
+            }
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message);
             }
         }

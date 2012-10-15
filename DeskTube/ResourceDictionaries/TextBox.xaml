@@ -5,7 +5,7 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Century Gothic"/>
         <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="Padding" Value="3"/>
+        <Setter Property="Padding" Value="5,3"/>
         <Setter Property="Background" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
@@ -17,7 +17,7 @@
                             Background="{TemplateBinding Background}">
                         <Grid>
                             <ScrollViewer x:Name="PART_ContentHost"/>
-                            <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="Black"
+                            <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="{TemplateBinding Foreground}"
                                        Text="{TemplateBinding Tag}"
                                        Visibility="{TemplateBinding Text, Converter={StaticResource StringToVisibilityInvertedConverter}}"/>
                         </Grid>
@@ -37,7 +37,7 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Century Gothic"/>
         <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="Padding" Value="3"/>
+        <Setter Property="Padding" Value="5,3"/>
         <Setter Property="Background" Value="{DynamicResource LightGrayBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>

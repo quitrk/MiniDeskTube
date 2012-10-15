@@ -1,4 +1,5 @@
-﻿using Infrastructure;
+﻿using System.Windows.Input;
+using Infrastructure;
 using Infrastructure.Interfaces;
 
 namespace DeskTube.Views

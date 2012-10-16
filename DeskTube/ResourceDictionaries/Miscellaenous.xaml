@@ -6,6 +6,10 @@
         <Setter Property="Stretch" Value="Fill"/>
         <Setter Property="Height" Value="1"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="Stroke" Value="{DynamicResource LightGrayBrush}"/>
+        <Setter Property="Stroke" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+    
+    <Style TargetType="{x:Type ContentControl}">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     </Style>
 </ResourceDictionary>

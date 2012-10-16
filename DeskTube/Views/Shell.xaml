@@ -64,78 +64,79 @@
         </Style>
     </Window.Style>
 
-    <xctk:BusyIndicator IsBusy="{Binding StartupPageViewModel.IsLoading, FallbackValue=False}" >
-        <xctk:BusyIndicator IsBusy="{Binding MainPageViewModel.IsLoading, FallbackValue=False}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition />
-                </Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
 
-                <!-- title bar -->
-                <Grid Margin="10">
+        <!-- title bar -->
+        <Grid Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                <Image Source="../icon.ico" Height="38"/>
+                <StackPanel Margin="10,0,0,0" VerticalAlignment="Bottom">
+                    <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" Foreground="{DynamicResource LightBlueBrush}"/>
+                    <TextBlock Style="{DynamicResource TextBlockStyle}" Text="All YouTube videos on your desktop" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Visibility="{Binding UserName, Converter={StaticResource StringToVisibilityConverter}}" VerticalAlignment="Top" Margin="10,-10,20,0">
+                <StackPanel VerticalAlignment="Bottom">
+                    <TextBlock Text="{Binding UserName}" Style="{DynamicResource TextBlockStyle}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                    <Button Style="{DynamicResource CleanButtonStyle}" Command="{Binding LogoutCommand}">
+                        <TextBlock Text="LOG OUT" Style="{DynamicResource TextBlockStyle}" FontSize="10" HorizontalAlignment="Right"
+                                       FontFamily="Century Gothic"/>
+                    </Button>
+                </StackPanel>
+                <Image Source="{Binding UserThumbnail}" Height="48" Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.ColumnSpan="4" Orientation="Horizontal">
-                        <Image Source="../icon.ico" Height="38"/>
-                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Bottom">
-                            <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" Foreground="{DynamicResource LightBlueBrush}"/>
-                            <TextBlock Style="{DynamicResource TextBlockStyle}" Text="All YouTube videos on your desktop" Foreground="{DynamicResource LightGrayBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!--<Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="1" ToolTip="Settings" VerticalAlignment="Top">
-                    <Image Source="..\images\settingsIcon.png" Width="16" Height="16"/>
-                </Button>
-                <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="2" Margin="5,0,0,0" ToolTip="Logout" Command="{Binding LogoutCommand}" VerticalAlignment="Top">
-                    <Image Source="..\images\logoutIcon.png" Width="16"/>
-                </Button>-->
-
-                    <StackPanel Orientation="Horizontal" Grid.Column="1" Visibility="{Binding UserName, Converter={StaticResource StringToVisibilityConverter}}" VerticalAlignment="Top" Margin="10,-10,20,0">
-                        <StackPanel VerticalAlignment="Bottom">
-                            <TextBlock Text="{Binding UserName}" Style="{DynamicResource TextBlockStyle}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
-                            <Button Style="{DynamicResource CleanButtonStyle}" Command="{Binding LogoutCommand}">
-                                <TextBlock Text="LOG OUT" Style="{DynamicResource TextBlockStyle}" FontSize="10" HorizontalAlignment="Right"
-                                       FontFamily="Century Gothic"/>
-                            </Button>
-                        </StackPanel>
-                        <Image Source="{Binding UserThumbnail}" Height="48" Margin="10,0,0,0"/>
-                    </StackPanel>
-
-                    <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="2" Margin="10,0,0,0" Click="OnMinimizeWindow" ToolTip="Minimize" VerticalAlignment="Top">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Margin="10,0,0,0" Click="OnMinimizeWindow" ToolTip="Minimize" VerticalAlignment="Top">
                         <Image Source="..\images\minimizeIcon.png" />
                     </Button>
-                    <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="3" Margin="10,0,0,0" Click="OnCloseWindow" ToolTip="Exit" VerticalAlignment="Top">
+                    <Button Style="{DynamicResource CleanButtonStyle}" Grid.Column="1" Margin="10,0,0,0" Click="OnCloseWindow" ToolTip="Exit" VerticalAlignment="Top">
                         <Image Source="..\images\closeApplicationIcon.png" />
                     </Button>
                 </Grid>
 
-                <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" Margin="0,10,0,0" x:Name="startupPage" RenderTransformOrigin="0.5,0.5">
-                    <ContentControl.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </ContentControl.RenderTransform>
-                </ContentControl>
-                <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" Margin="0,10,0,0" x:Name="mainPage" RenderTransformOrigin="0.5,0.5">
-                    <ContentControl.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </ContentControl.RenderTransform>
-                </ContentControl>
-            </Grid>
-        </xctk:BusyIndicator>
-    </xctk:BusyIndicator>
+                <Grid HorizontalAlignment="Right" Margin="0,10,0,0">
+                    <xctk:BusyIndicator IsBusy="{Binding MainPageViewModel.IsLoading}" Background="Transparent"/>
+                    <xctk:BusyIndicator IsBusy="{Binding StartupPageViewModel.IsLoading}" Background="Transparent"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
+
+        <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" x:Name="startupPage" RenderTransformOrigin="0.5,0.5">
+            <ContentControl.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ContentControl.RenderTransform>
+        </ContentControl>
+        <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" x:Name="mainPage" RenderTransformOrigin="0.5,0.5">
+            <ContentControl.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ContentControl.RenderTransform>
+        </ContentControl>
+    </Grid>
 </Window>

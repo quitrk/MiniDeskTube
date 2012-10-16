@@ -1,22 +1,20 @@
 DEVELOPMENT
 
-* improve comments section, implement add comment
+* implement add comment
 * add settings section 
 * think of a solution for buffering problems
 * implement video progress bar 
 * add multimedia keys support
 * add lyrics section (?)
-* add loading indicator for playlist / subscription	 / favorites
 * mimize to system tray
 * remove subscriptions
 * add sign in when user has chosen to skip login
+* add video download 
 
 BUGS
 
 * Volume control is inaccurate when < 10%
-* favorites section gets reloaded when clicked even if the song currently playing is a member of it.
 * Fix player overlay (you've no idea what I'm talking about).
-* when first selecting a video, it will first created the browser container and then select other video.
 
 DESIGN
 

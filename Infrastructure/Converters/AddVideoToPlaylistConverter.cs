@@ -23,7 +23,12 @@ namespace Infrastructure.Converters
         /// </returns>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return new Tuple<Playlist, Video>((Playlist)values[0], (Video)values[1]);
+            if (values[0] is Playlist && values[1] is Video)
+            {
+                return new Tuple<Playlist, Video>((Playlist) values[0], (Video) values[1]);
+            }
+
+            return null;
         }
 
         /// <summary>

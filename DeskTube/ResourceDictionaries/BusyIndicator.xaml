@@ -10,6 +10,7 @@
     <Color x:Key="UnfilledColor" A="0" B="0" R="0" G="0"/>
 
     <Style TargetType="{x:Type extToolkit:BusyIndicator}">
+        <Setter Property="Background" Value="#11ffffff"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type extToolkit:BusyIndicator}">
@@ -162,10 +163,13 @@
                         <ContentControl x:Name="content" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" 
                                         HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <Rectangle x:Name="overlay" Fill="#11ffffff"/>
+                        <Rectangle x:Name="overlay" Fill="{TemplateBinding Background}"/>
 
                         <Grid x:Name="busycontent">
-                            <Canvas Height="40" Width="40">
+                            <Canvas Height="40" Width="40" RenderTransformOrigin="0.5,0.5">
+                                <Canvas.LayoutTransform>
+                                    <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
+                                </Canvas.LayoutTransform>
                                 <Canvas.Resources>
 									<Style TargetType="Rectangle">
                                         <Setter Property="Width" Value="5"/>

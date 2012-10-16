@@ -4,9 +4,9 @@
     <Style TargetType="{x:Type Button}">
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontFamily" Value="Century Gothic"/>
@@ -26,8 +26,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="Foreground" Value="{DynamicResource DarkGrayBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
             </Trigger>
         </Style.Triggers>
     </Style>

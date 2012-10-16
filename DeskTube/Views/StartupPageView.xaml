@@ -6,7 +6,7 @@
              xmlns:ViewModels="clr-namespace:DeskTube.ViewModels" mc:Ignorable="d" 
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure"
-             d:DataContext="{d:DesignInstance ViewModels:StartupPageViewModel}">
+             d:DataContext="{d:DesignInstance ViewModels:StartupPageViewModel}" IsEnabled="{Binding IsViewEnabled}">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="PreviewKeyUp">

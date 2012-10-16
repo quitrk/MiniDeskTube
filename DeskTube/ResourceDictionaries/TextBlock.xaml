@@ -4,7 +4,7 @@
     <Style TargetType="{x:Type TextBlock}" x:Key="TextBlockStyle"> <!-- FU BUTTON-->
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontFamily" Value="Bell Gothic Std"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>

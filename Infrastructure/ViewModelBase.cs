@@ -67,8 +67,20 @@ namespace Infrastructure
             set
             {
                 this.isLoading = value;
-                this.OnPropertyChanged("IsLoading");
+                this.OnPropertyChanged(() => this.IsLoading);
+                this.OnPropertyChanged(() => this.IsViewEnabled);
             }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is view enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is view enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsViewEnabled
+        {
+            get { return !this.IsLoading; }
         }
 
         #endregion

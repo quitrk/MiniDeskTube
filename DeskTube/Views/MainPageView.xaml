@@ -6,7 +6,8 @@
              xmlns:ViewModels="clr-namespace:DeskTube.ViewModels"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure" mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
+             d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}"
+             IsEnabled="{Binding IsViewEnabled}">
 
     <UserControl.Resources>
         <ContextMenu x:Key="VideoContextMenu" 
@@ -19,9 +20,8 @@
                 <MenuItem.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="-10">
-                            <Separator Margin="0,0,-23,0" x:Name="separator"/>
-
-                            <MenuItem Header="{Binding Title}"
+                            <Path Style="{DynamicResource LineStyle}" x:Name="topBorder" Visibility="Collapsed"/>
+                            <MenuItem Header="{Binding Title}" 
                                       Command="{Binding DataContext.AddVideoToPlaylistCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                 <MenuItem.CommandParameter>
                                     <MultiBinding Converter="{StaticResource AddVideoToPlaylistConverter}">
@@ -31,24 +31,19 @@
                                 </MenuItem.CommandParameter>
                             </MenuItem>
                         </StackPanel>
-
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
-                                <Setter Property="Visibility" TargetName="separator" Value="Collapsed"/>
+                                <Setter Property="Visibility" TargetName="topBorder" Value="Visible"/>
                             </DataTrigger>
                         </DataTemplate.Triggers>
                     </DataTemplate>
                 </MenuItem.ItemTemplate>
             </MenuItem>
 
-            <Separator Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}}"/>
-
             <!-- remove -->
             <MenuItem Header="Remove"
                       Visibility="{Binding DataContext.CanRemoveVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
                       Command="{Binding DataContext.RemoveVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-
-            <Separator Visibility="{Binding DataContext.CanRemoveVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <!-- subscribe -->
             <MenuItem Visibility="{Binding DataContext.CanSubscribe, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -60,8 +55,6 @@
                     </TextBlock>
                 </MenuItem.Header>
             </MenuItem>
-
-            <Separator Visibility="{Binding DataContext.CanSubscribe, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <MenuItem Header="Favorite"
                       Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -80,7 +73,7 @@
             <StackPanel Margin="0,0,0,10">
                 <!-- user feeds -->
                 <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}" Margin="10,0"
-                     Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}">
+                             Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal"/>
@@ -93,7 +86,7 @@
                     </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -101,7 +94,7 @@
                                         <ContentPresenter />
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -129,7 +122,7 @@
                     </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -137,7 +130,7 @@
                                         <ContentPresenter />
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -162,7 +155,7 @@
                     </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -170,7 +163,7 @@
                                         <ContentPresenter />
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -186,7 +179,7 @@
                 <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"/>
 
                 <!-- comments / timer -->
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" >
+                <Border Background="{DynamicResource SecondaryBackgroundBrush}" Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,10">
                     <Grid Margin="10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -202,31 +195,34 @@
                         <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
                     Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
 
-                        <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="White" HorizontalAlignment="Center" Margin="10,0" 
+                        <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource BaseForegroundBrush}" HorizontalAlignment="Center" Margin="10,0" 
                        Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" FontSize="12"/>
 
                         <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
-                            <StackPanel Background="{DynamicResource BackgroundBrush}">
-                                <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
-                         Visibility="{Binding CurrentVideoComments.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Margin="0,0,20,0">
-                                                <TextBlock Text="{Binding Author}" Foreground="{DynamicResource LightBlueBrush}" />
-                                                <TextBlock Text="{Binding Content}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="White"/>
+                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
 
-                                                <Path Style="{DynamicResource LineStyle}" Stroke="{DynamicResource GrayBrush}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
+                                <StackPanel>
+                                    <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
+                                             Visibility="{Binding CurrentVideoComments.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,10,0,0">
+                                                    <TextBlock Text="{Binding Author}" Style="{DynamicResource TextBlockStyle}" />
+                                                    <TextBlock Text="{Binding Content}" Style="{DynamicResource TextBlockStyle}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="{DynamicResource BaseForegroundBrush}"/>
 
-                                <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400"/>
-                                <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"/>
-                            </StackPanel>
+                                                    <Path Style="{DynamicResource LineStyle}" Stroke="{DynamicResource BorderBrush}" Margin="0,10,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"/>
+                                    <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"/>
+                                </StackPanel>
+                            </Border>
                         </Popup>
 
-                        <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource LightGrayBrush}" VerticalAlignment="Bottom" FontSize="12">
+                        <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" VerticalAlignment="Bottom" FontSize="12">
                     <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
                     <Run Text="/"/>
                     <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>
@@ -235,9 +231,9 @@
                 </Border>
             </StackPanel>
         </StackPanel>
-        
+
         <!-- current videos -->
-        <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo}" Margin="10" Grid.Row="1">
+        <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo, Mode=OneWay}" Margin="10,0,10,10" Grid.Row="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock FontFamily="Bell Gothic Std" Text="{Binding Title}"/>
@@ -246,25 +242,24 @@
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnListBoxItemPreviewMouseRightButtonDown" />
-                    <Setter Property="Foreground" Value="{DynamicResource LightGrayBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListBoxItem}">
                                 <Border BorderThickness="0,1" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
-                                    <ContentPresenter Margin="0,3">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                                <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </ContentPresenter>
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                            <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                    <ContentPresenter Margin="0,3"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Foreground" Value="{DynamicResource LightBlueBrush}" />
                                     </Trigger>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource LightGrayBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -277,8 +272,9 @@
 
         <!-- filter & video controls & search -->
         <StackPanel Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}">
+
             <!-- filter & video controls -->
-            <Grid Margin="10,10,10,0" Visibility="{Binding CurrentVideos.Count, Converter={StaticResource CountToVisibilityConverter}}">
+            <Grid Margin="10,10,10,0" Visibility="{Binding CurrentVideos.Count, Converter={StaticResource CountToVisibilityConverter}, FallbackValue=Collapsed}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition />
@@ -286,7 +282,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Command="{Binding SyncCommand}" Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,10,0"
-                        BorderBrush="#464646">
+                        BorderBrush="{DynamicResource BorderBrush}">
                     <Button.Style>
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
                             <Setter Property="Padding" Value="3"/>
@@ -314,7 +310,7 @@
                 </Button>
 
                 <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"
-                         Grid.Column="1"  Background="Transparent" Foreground="{DynamicResource LightGrayBrush}" BorderBrush="#464646"/>
+                         Grid.Column="1"  Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="2">
                     <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop" Command="{Binding StopCommand}">

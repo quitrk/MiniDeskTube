@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -895,7 +896,8 @@ namespace DeskTube.ViewModels
         /// </summary>
         private void HandleSyncCommand()
         {
-            this.CurrentVideos.Clear();
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
 
             if (this.BrowserView != null)
             {
@@ -931,7 +933,7 @@ namespace DeskTube.ViewModels
                 this.SelectedUserFeed = currentUserFeed;
                 this.SelectedSubscription = this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId);
 
-                this.LoadUserPlaylists();
+                this.LoadUserPlaylists(); //// in order to be able to add videos from channels to existing playlists
             }
             else if (currentUserFeed.Equals("favorites"))
             {
@@ -942,10 +944,6 @@ namespace DeskTube.ViewModels
                 this.SelectedUserFeed = currentUserFeed;
 
                 this.LoadUserPlaylists();
-            }
-            else if (currentUserFeed.Equals("search"))
-            {
-
             }
 
             this.IsSynced = true;
@@ -979,7 +977,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandlePlayCommand()
         {
-            this.PlayVideo(this.currentVideo);
+            this.PlayVideo(this.CurrentVideo);
         }
 
         /// <summary>
@@ -1127,7 +1125,8 @@ namespace DeskTube.ViewModels
         {
             if (eventArgs.Key == Key.Enter && !string.IsNullOrEmpty(this.SearchText))
             {
-                this.CurrentVideos.Clear();
+                this.CurrentVideos = null;
+                this.CurrentVideo = null;
 
                 this.SelectedUserFeed = null;
                 this.SelectedPlaylist = null;
@@ -1146,20 +1145,28 @@ namespace DeskTube.ViewModels
                 this.youtubeRequest.Settings.AutoPaging = false;
                 this.youtubeRequest.Settings.PageSize = 50;
 
-                var query = new YouTubeQuery(YouTubeQuery.DefaultVideoUri)
-                                {
-                                    OrderBy = "relevance",
-                                    Query = this.SearchText,
-                                    SafeSearch = YouTubeQuery.SafeSearchValues.None
-                                };
+                this.IsLoading = true;
 
-                this.CurrentVideos = new ObservableCollection<Video>(youtubeRequest.Get<Video>(query).Entries);
+                Task.Factory.StartNew(() =>
+                                    {
+                                        var query = new YouTubeQuery(YouTubeQuery.DefaultVideoUri)
+                                                        {
+                                                            OrderBy = "relevance",
+                                                            Query = this.SearchText,
+                                                            SafeSearch = YouTubeQuery.SafeSearchValues.None
+                                                        };
 
-                this.youtubeRequest.Settings.AutoPaging = true;
+                                        this.CurrentVideos = new ObservableCollection<Video>(youtubeRequest.Get<Video>(query).Entries);
 
-                this.AddVideoFiltering();
+                                        ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
+                                                                                        {
+                                                                                            this.youtubeRequest.Settings.AutoPaging = true;
+                                                                                            this.SearchText = null;
+                                                                                            this.AddVideoFiltering();
 
-                this.SearchText = null;
+                                                                                            this.IsLoading = false;
+                                                                                        }));
+                                    });
             }
         }
 
@@ -1241,10 +1248,16 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadUserFavorites()
         {
+            if(this.Favorites != null)
+            {
+                return;
+            }
+
             this.SelectedPlaylist = null;
             this.SelectedSubscription = null;
 
-            this.CurrentVideos.Clear();
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
 
             if (this.BrowserView != null)
             {
@@ -1255,16 +1268,20 @@ namespace DeskTube.ViewModels
 
             this.ClearTimers();
 
-            var favorites = this.youtubeRequest.GetFavoriteFeed("default");
+            this.IsLoading = true;
+            Task.Factory.StartNew(() =>
+                                {
+                                    var favorites = this.youtubeRequest.GetFavoriteFeed("default");
 
-            foreach (var favorite in favorites.Entries)
-            {
-                this.CurrentVideos.Add(favorite);
-            }
+                                    this.CurrentVideos = new ObservableCollection<Video>(favorites.Entries);
+                                    this.Favorites = new List<Video>(this.CurrentVideos);
 
-            this.Favorites = new List<Video>(this.CurrentVideos);
-
-            this.AddVideoFiltering();
+                                    ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
+                                                                                {
+                                                                                    this.AddVideoFiltering();
+                                                                                    this.IsLoading = false;
+                                                                                }));
+                                });
         }
 
         /// <summary>
@@ -1318,7 +1335,8 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadPlaylistVideos()
         {
-            this.CurrentVideos.Clear();
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
 
             if (this.BrowserView != null)
             {
@@ -1329,13 +1347,19 @@ namespace DeskTube.ViewModels
 
             this.ClearTimers();
 
-            var playListMembers = this.youtubeRequest.GetPlaylist(this.SelectedPlaylist).Entries;
-            foreach (var playListMember in playListMembers)
-            {
-                this.CurrentVideos.Add(playListMember);
-            }
+            this.IsLoading = true;
+            Task.Factory.StartNew(() =>
+                                {
+                                    var playListMembers = this.youtubeRequest.GetPlaylist(this.SelectedPlaylist).Entries;
 
-            this.AddVideoFiltering();
+                                    this.CurrentVideos = new ObservableCollection<Video>(playListMembers);
+
+                                    ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
+                                                                                    {
+                                                                                        this.AddVideoFiltering();
+                                                                                        this.IsLoading = false;
+                                                                                    }));
+                                });
         }
 
         /// <summary>
@@ -1344,7 +1368,8 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadSubscriptionVideos()
         {
-            this.CurrentVideos.Clear();
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
 
             if (this.BrowserView != null)
             {
@@ -1355,14 +1380,19 @@ namespace DeskTube.ViewModels
 
             this.ClearTimers();
 
-            var subscriptionMembers = this.youtubeRequest.GetVideoFeed(this.SelectedSubscription.UserName);
+            this.IsLoading = true;
+            Task.Factory.StartNew(() =>
+                                {
+                                    var subscriptionMembers = this.youtubeRequest.GetVideoFeed(this.SelectedSubscription.UserName);
 
-            foreach (var subscriptionMember in subscriptionMembers.Entries)
-            {
-                this.CurrentVideos.Add(subscriptionMember);
-            }
+                                    this.CurrentVideos = new ObservableCollection<Video>(subscriptionMembers.Entries);
 
-            this.AddVideoFiltering();
+                                    ((DependencyObject) this.View).Dispatcher.BeginInvoke(new Action(() =>
+                                                                                    {
+                                                                                        this.AddVideoFiltering();
+                                                                                        this.IsLoading = false;
+                                                                                    }));
+                                });
         }
 
         /// <summary>
@@ -1398,7 +1428,7 @@ namespace DeskTube.ViewModels
         /// <returns></returns>
         private bool ShouldVideoBeDisplayed(object videoObject)
         {
-            var video = (Video)videoObject;
+            var video = this.CurrentVideos.First(v => v.VideoId == ((Video)videoObject).VideoId);
             return string.IsNullOrEmpty(this.FilterText) || video.Title.ToLower().Contains(this.FilterText.ToLower()) || video == this.CurrentVideo;
         }
 
@@ -1479,6 +1509,7 @@ namespace DeskTube.ViewModels
             this.Playlists = null;
             this.UserFeeds = null;
             this.CurrentVideoComments = null;
+            this.CurrentVideo = null;
 
             this.IsBrowserVisible = false;
 

@@ -5,62 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ViewModels="clr-namespace:DeskTube.ViewModels"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure" mc:Ignorable="d"
+             xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure"
+             xmlns:local="clr-namespace:DeskTube.Views" mc:Ignorable="d"
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}"
              IsEnabled="{Binding IsViewEnabled}">
-
-    <UserControl.Resources>
-        <ContextMenu x:Key="VideoContextMenu" 
-                     Visibility="{Binding DataContext.IsUserAuthenticated, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}">
-
-            <!-- add to -->
-            <MenuItem Header="Add to" 
-                          Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}}"
-                          ItemsSource="{Binding DataContext.AvailablePlaylistsForAddVideo, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                <MenuItem.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="-10">
-                            <Path Style="{DynamicResource LineStyle}" x:Name="topBorder" Visibility="Collapsed"/>
-                            <MenuItem Header="{Binding Title}" 
-                                      Command="{Binding DataContext.AddVideoToPlaylistCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                <MenuItem.CommandParameter>
-                                    <MultiBinding Converter="{StaticResource AddVideoToPlaylistConverter}">
-                                        <Binding />
-                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=ContextMenu}"/>
-                                    </MultiBinding>
-                                </MenuItem.CommandParameter>
-                            </MenuItem>
-                        </StackPanel>
-                        <DataTemplate.Triggers>
-                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
-                                <Setter Property="Visibility" TargetName="topBorder" Value="Visible"/>
-                            </DataTrigger>
-                        </DataTemplate.Triggers>
-                    </DataTemplate>
-                </MenuItem.ItemTemplate>
-            </MenuItem>
-
-            <!-- remove -->
-            <MenuItem Header="Remove"
-                      Visibility="{Binding DataContext.CanRemoveVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
-                      Command="{Binding DataContext.RemoveVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-
-            <!-- subscribe -->
-            <MenuItem Visibility="{Binding DataContext.CanSubscribe, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
-                      Command="{Binding DataContext.AddSubscriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }">
-                <MenuItem.Header>
-                    <TextBlock>
-                        <Run Text="Subscribe to"/>
-                        <Run Text="{Binding Uploader}" FontWeight="SemiBold"/>
-                    </TextBlock>
-                </MenuItem.Header>
-            </MenuItem>
-
-            <MenuItem Header="Favorite"
-                      Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
-                      Command="{Binding DataContext.AddFavoriteVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-        </ContextMenu>
-    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -70,108 +18,15 @@
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <StackPanel Margin="0,0,0,10">
-                <!-- user feeds -->
-                <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}" Margin="10,0"
-                             Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock FontFamily="Century Gothic" FontSize="18" Text="{Binding }" Margin="0,0,10,0"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                        <ContentPresenter />
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+            <StackPanel Margin="10,0,10,10">
+                <!-- user feeds-->
+                <local:UserFeedsView />
 
                 <!-- playlists -->
-                <ListBox ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist}" Grid.Row="1" Margin="10,0"
-                     Visibility="{Binding ArePlaylistsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock FontFamily="Bell Gothic Std" Margin="0,0,10,0">
-                            <Run Text="{Binding Title}"/>
-                            <Run Text="{Binding CountHint, StringFormat={}({0} videos), Mode=OneWay}"/>
-                            </TextBlock>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                        <ContentPresenter />
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+                <local:PlaylistsView />
 
                 <!-- subscriptions -->
-                <ListBox ItemsSource="{Binding Subscriptions}" SelectedItem="{Binding SelectedSubscription}" Grid.Row="1" Margin="10,0"
-                     Visibility="{Binding AreSubscriptionsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock FontFamily="Bell Gothic Std" Margin="0,0,10,0" Text="{Binding UserName}"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListBoxItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                        <ContentPresenter />
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
+                <local:SubscriptionsView />
             </StackPanel>
 
             <StackPanel>
@@ -233,42 +88,7 @@
         </StackPanel>
 
         <!-- current videos -->
-        <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo, Mode=OneWay}" Margin="10,0,10,10" Grid.Row="1">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock FontFamily="Bell Gothic Std" Text="{Binding Title}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnListBoxItemPreviewMouseRightButtonDown" />
-                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <Border BorderThickness="0,1" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                            <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                    <ContentPresenter Margin="0,3"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource LightBlueBrush}" />
-                                    </Trigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="ContextMenu" Value="{StaticResource VideoContextMenu}"/>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
+        <local:CurrentVideosView Margin="10,0,10,10" Grid.Row="1"/>
 
         <!-- filter & video controls & search -->
         <StackPanel Grid.Row="2" Background="{DynamicResource SecondaryBackgroundBrush}">

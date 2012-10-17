@@ -38,19 +38,5 @@ namespace DeskTube.Views
         }
 
         #endregion
-
-        #region EVENT HANDLERS
-
-        /// <summary>
-        /// Called when [list box item preview mouse right button down]. Disables right click item selection.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
-        private void OnListBoxItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        #endregion
     }
 }

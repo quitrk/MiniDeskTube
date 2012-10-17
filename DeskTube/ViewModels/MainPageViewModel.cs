@@ -71,12 +71,7 @@ namespace DeskTube.ViewModels
         /// Backing field for BrowserView
         /// </summary>
         private BrowserView browserView;
-
-        /// <summary>
-        /// Backing field for IsOverlayActive
-        /// </summary>
-        private bool isOverlayActive = true;
-
+        
         /// <summary>
         /// The YouTubeRequest object
         /// </summary>
@@ -174,11 +169,20 @@ namespace DeskTube.ViewModels
             this.AddFavoriteVideoCommand = new DelegateCommand<Video>(this.HandleAddFavoriteVideoCommand);
             this.AddSubscriptionCommand = new DelegateCommand<Video>(this.HandleAddSubscriptionCommand);
             this.SearchCommand = new DelegateCommand<KeyEventArgs>(this.HandleSearchCommand);
+            this.RemovePlaylistCommand = new DelegateCommand<Playlist>(this.HandleRemovePlaylistCommand);
+            this.RemoveSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleRemoveSubscriptionCommand);
         }
 
         #endregion
 
         #region PROPERTIES
+
+        /// <summary>
+        /// Gets or sets the windowHost.
+        /// </summary>
+        /// <value>The windowHost.</value>
+        /// <remarks></remarks>
+        public Window WindowHost { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is synced.
@@ -390,6 +394,7 @@ namespace DeskTube.ViewModels
                 }
 
                 this.browserView = value;
+                this.browserView.WindowHost = this.WindowHost;
                 this.OnPropertyChanged(() => this.BrowserView);
             }
         }
@@ -412,14 +417,12 @@ namespace DeskTube.ViewModels
                 this.isBrowserVisible = value;
                 this.OnPropertyChanged(() => this.IsBrowserVisible);
 
-                if (value)
+                if (this.BrowserView == null || this.BrowserView.BrowserOverlay == null)
                 {
-                    this.ActivateOverlay();
+                    return;
                 }
-                else
-                {
-                    this.DeactivateOverlay();
-                }
+
+                this.BrowserView.BrowserOverlay.BrowserOverlayContainer.Opacity = this.isBrowserVisible ? 0.1 : 0;
             }
         }
 
@@ -457,25 +460,6 @@ namespace DeskTube.ViewModels
                 this.filterText = value;
                 this.OnPropertyChanged(() => this.FilterText);
                 this.FilteredCurrentVideos.Refresh();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the isOverlayActive.
-        /// </summary>
-        /// <value>The isOverlayActive.</value>
-        /// <remarks></remarks>
-        public bool IsOverlayActive
-        {
-            get
-            {
-                return this.isOverlayActive;
-            }
-
-            set
-            {
-                this.isOverlayActive = value;
-                this.OnPropertyChanged(() => this.IsOverlayActive);
             }
         }
 
@@ -845,6 +829,22 @@ namespace DeskTube.ViewModels
         /// </value>
         public DelegateCommand<KeyEventArgs> SearchCommand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the remove subscription command.
+        /// </summary>
+        /// <value>
+        /// The remove subscription command.
+        /// </value>
+        public DelegateCommand<Subscription> RemoveSubscriptionCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the remove playlist command.
+        /// </summary>
+        /// <value>
+        /// The remove playlist command.
+        /// </value>
+        public DelegateCommand<Playlist> RemovePlaylistCommand { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -866,25 +866,6 @@ namespace DeskTube.ViewModels
             {
                 this.SelectedUserFeed = this.UserFeeds.First();
             }
-        }
-
-        /// <summary>
-        /// Activates the overlay.
-        /// </summary>
-        public void ActivateOverlay()
-        {
-            if (this.CurrentVideo != null)
-            {
-                this.IsOverlayActive = true;
-            }
-        }
-
-        /// <summary>
-        /// Deactivates the overlay.
-        /// </summary>
-        public void DeactivateOverlay()
-        {
-            this.IsOverlayActive = false;
         }
 
         #endregion
@@ -910,6 +891,12 @@ namespace DeskTube.ViewModels
 
             var currentUserFeed = this.SelectedUserFeed;
 
+            if (currentUserFeed == null)
+            {
+                this.IsSynced = true;
+                return;
+            }
+
             if (currentUserFeed.Equals("playlists"))
             {
                 var currentPlaylistId = this.SelectedPlaylist != null ? this.SelectedPlaylist.Id : null;
@@ -919,7 +906,9 @@ namespace DeskTube.ViewModels
                 this.Favorites = null;
 
                 this.SelectedUserFeed = currentUserFeed;
-                this.SelectedPlaylist = this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId);
+                this.SelectedPlaylist = this.Playlists != null
+                                            ? this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
+                                            : null;
 
             }
             else if (currentUserFeed.Equals("subscriptions"))
@@ -931,7 +920,9 @@ namespace DeskTube.ViewModels
                 this.Favorites = null;
 
                 this.SelectedUserFeed = currentUserFeed;
-                this.SelectedSubscription = this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId);
+                this.SelectedSubscription = this.Subscriptions != null
+                                                ? this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId)
+                                                : null;
 
                 this.LoadUserPlaylists(); //// in order to be able to add videos from channels to existing playlists
             }
@@ -943,7 +934,7 @@ namespace DeskTube.ViewModels
 
                 this.SelectedUserFeed = currentUserFeed;
 
-                this.LoadUserPlaylists();
+                this.LoadUserPlaylists(); //// in order to be able to add videos from favorites to existing playlists
             }
 
             this.IsSynced = true;
@@ -1170,6 +1161,28 @@ namespace DeskTube.ViewModels
             }
         }
 
+        /// <summary>
+        /// Handles the remove playlist command.
+        /// </summary>
+        /// <param name="playlist">The playlist.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleRemovePlaylistCommand(Playlist playlist)
+        {
+            this.youtubeRequest.Delete(playlist);
+            this.IsSynced = false;
+        }
+
+        /// <summary>
+        /// Handles the remove subscription command.
+        /// </summary>
+        /// <param name="subscription">The subscription.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleRemoveSubscriptionCommand(Subscription subscription)
+        {
+            this.youtubeRequest.Delete(subscription);
+            this.IsSynced = false;
+        }
+
         #endregion
 
         #region PRIVATE METHODS
@@ -1248,7 +1261,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadUserFavorites()
         {
-            if(this.Favorites != null)
+            if (this.Favorites != null)
             {
                 return;
             }
@@ -1387,7 +1400,7 @@ namespace DeskTube.ViewModels
 
                                     this.CurrentVideos = new ObservableCollection<Video>(subscriptionMembers.Entries);
 
-                                    ((DependencyObject) this.View).Dispatcher.BeginInvoke(new Action(() =>
+                                    ((DependencyObject)this.View).Dispatcher.BeginInvoke(new Action(() =>
                                                                                     {
                                                                                         this.AddVideoFiltering();
                                                                                         this.IsLoading = false;

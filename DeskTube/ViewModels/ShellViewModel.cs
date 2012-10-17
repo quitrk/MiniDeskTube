@@ -171,10 +171,6 @@ namespace DeskTube.ViewModels
                 this.mainPageViewModel = null;
             }
 
-            ((Shell)this.View).LocationChanged -= OnShellLocationChanged;
-            ((Shell)this.View).Activated -= this.OnShellActivated;
-            ((Shell)this.View).Deactivated -= this.OnShellDeactived;
-
             var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowStartupPage"));
             storyboard.Begin();
         }
@@ -195,12 +191,9 @@ namespace DeskTube.ViewModels
             this.mainPageViewModel = new MainPageViewModel();
             this.mainPageViewModel.ResolveView();
             this.mainPageViewModel.PopulateData(youtubeRequest);
+            this.mainPageViewModel.WindowHost = (Window)this.View;
             this.OnPropertyChanged(() => MainPageViewModel);
-
-            ((Shell)this.View).LocationChanged += OnShellLocationChanged;
-            ((Shell)this.View).Activated += this.OnShellActivated;
-            ((Shell)this.View).Deactivated += this.OnShellDeactived;
-
+            
             var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowMainPage"));
             storyboard.Begin();
         }
@@ -223,37 +216,6 @@ namespace DeskTube.ViewModels
             this.UserName = request.Settings.Credentials.Username;
         }
 
-        /// <summary>
-        /// Called when [shell activated].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnShellActivated(object sender, EventArgs e)
-        {
-            this.MainPageViewModel.ActivateOverlay();
-        }
-
-        /// <summary>
-        /// Called when [shell deactived].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnShellDeactived(object sender, EventArgs e)
-        {
-            this.MainPageViewModel.DeactivateOverlay();
-        }
-
-        /// <summary>
-        /// Called when [shell location changed].
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnShellLocationChanged(object sender, EventArgs e)
-        {
-            this.MainPageViewModel.DeactivateOverlay();
-            this.MainPageViewModel.ActivateOverlay();
-        }
-
         #endregion
 
         #region ViewModelBase
@@ -269,10 +231,6 @@ namespace DeskTube.ViewModels
 
             this.mainPageViewModel.Dispose();
             this.startupPageViewModel.Dispose();
-
-            ((Shell)this.View).LocationChanged -= OnShellLocationChanged;
-            ((Shell)this.View).Activated -= this.OnShellActivated;
-            ((Shell)this.View).Deactivated -= this.OnShellDeactived;
 
             GC.SuppressFinalize(this);
         }

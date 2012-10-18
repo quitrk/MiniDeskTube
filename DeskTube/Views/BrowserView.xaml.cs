@@ -28,7 +28,7 @@ namespace DeskTube.Views
         /// Backing field for WindowHost
         /// </summary>
         private Window windowHost;
-        
+
         #endregion
 
         #region CONSTRUCTOR
@@ -82,8 +82,13 @@ namespace DeskTube.Views
         /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool all)
         {
-            this.BrowserOverlay.WebBrowser.Dispose();
-            this.BrowserOverlay.BrowserOverlayContainer.Dispose();;
+            if (this.BrowserOverlay != null)
+            {
+                this.BrowserOverlay.WebBrowser.Dispose();
+                this.BrowserOverlay.BrowserOverlayContainer.Dispose();
+                this.BrowserOverlay = null;
+            }
+
             this.browser.Dispose();
             GC.SuppressFinalize(this);
         }

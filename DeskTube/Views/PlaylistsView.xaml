@@ -14,16 +14,10 @@
         </ContextMenu>
     </UserControl.Resources>
     
-    <ListBox ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist}" 
-                     Visibility="{Binding ArePlaylistsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-        <ListBox.ItemsPanel>
-            <ItemsPanelTemplate>
-                <VirtualizingStackPanel Orientation="Horizontal"/>
-            </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
+    <ListBox ItemsSource="{Binding Playlists}" SelectedItem="{Binding SelectedPlaylist}">
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <TextBlock FontFamily="Bell Gothic Std" Margin="0,0,10,0">
+                <TextBlock FontFamily="Bell Gothic Std">
                             <Run Text="{Binding Title}"/>
                             <Run Text="{Binding CountHint, StringFormat={}({0} videos), Mode=OneWay}"/>
                 </TextBlock>

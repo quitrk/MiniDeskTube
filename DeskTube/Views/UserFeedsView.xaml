@@ -3,12 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:ViewModels="clr-namespace:DeskTube.ViewModels" mc:Ignorable="d" 
+             xmlns:ViewModels="clr-namespace:DeskTube.ViewModels" xmlns:local="clr-namespace:DeskTube.Views"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Utilities="clr-namespace:Infrastructure.Utilities;assembly=Infrastructure"
+             mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
-    
-    <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}" 
-                             Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}">
+
+    <UserControl.Resources>
+        <ContextMenu x:Key="PlaylistsMenu" ItemsSource="{Binding DataContext.Playlists, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <ContextMenu.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock>
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                <Utilities:EventToCommand Command="{Binding DataContext.SetCurrentPlaylistCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding }"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                        <TextBlock Text="{Binding Title}"/>
+                    </TextBlock>
+                </DataTemplate>
+            </ContextMenu.ItemTemplate>
+        </ContextMenu>
+
+        <ContextMenu x:Key="SubscriptionsMenu" ItemsSource="{Binding DataContext.Subscriptions, RelativeSource={RelativeSource AncestorType=UserControl}}">
+            <ContextMenu.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding UserName}">
+                            <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                <Utilities:EventToCommand Command="{Binding DataContext.SetCurrentSubscriptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding }"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </TextBlock>
+                </DataTemplate>
+            </ContextMenu.ItemTemplate>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <ListBox ItemsSource="{Binding UserFeeds}" SelectedItem="{Binding SelectedUserFeed}" x:Name="feeds">
         <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
                 <VirtualizingStackPanel Orientation="Horizontal"/>
@@ -16,11 +52,13 @@
         </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
             <DataTemplate>
-                <TextBlock FontFamily="Century Gothic" FontSize="18" Text="{Binding }" Margin="0,0,10,0"/>
+                <TextBlock FontFamily="Century Gothic" FontSize="18" Text="{Binding }" Margin="0,0,10,0" />
             </DataTemplate>
         </ListBox.ItemTemplate>
         <ListBox.ItemContainerStyle>
             <Style TargetType="{x:Type ListBoxItem}">
+                <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnListBoxItemPreviewMouseRightButtonDown"/>
+                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnUserFeedMouseDown"/>
                 <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="Template">
@@ -38,4 +76,5 @@
             </Style>
         </ListBox.ItemContainerStyle>
     </ListBox>
+
 </UserControl>

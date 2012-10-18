@@ -12,4 +12,8 @@
     <Style TargetType="{x:Type ContentControl}">
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     </Style>
+    
+    <Style TargetType="{x:Type Popup}">
+        <Setter Property="PopupAnimation" Value="Fade"/>
+    </Style>
 </ResourceDictionary>

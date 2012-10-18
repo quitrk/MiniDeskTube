@@ -28,6 +28,16 @@ namespace DeskTube.ViewModels
         #region BACKING FIELDS
 
         /// <summary>
+        /// Backing field for IsPlaylistsPopupOpen
+        /// </summary>
+        private bool isPlaylistsPopupOpen;
+
+        /// <summary>
+        /// Backing field for IsSubscriptionsPopupOpen
+        /// </summary>
+        private bool isSubscriptionsPopupOpen;
+
+        /// <summary>
         /// Backing field for IsCommentsPopupOpen
         /// </summary>
         private bool isCommentsPopupOpen;
@@ -71,7 +81,7 @@ namespace DeskTube.ViewModels
         /// Backing field for BrowserView
         /// </summary>
         private BrowserView browserView;
-        
+
         /// <summary>
         /// The YouTubeRequest object
         /// </summary>
@@ -171,6 +181,10 @@ namespace DeskTube.ViewModels
             this.SearchCommand = new DelegateCommand<KeyEventArgs>(this.HandleSearchCommand);
             this.RemovePlaylistCommand = new DelegateCommand<Playlist>(this.HandleRemovePlaylistCommand);
             this.RemoveSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleRemoveSubscriptionCommand);
+            this.OpenSelectedUserFeedPopupCommand = new DelegateCommand(this.HandleOpenSelectedUserFeedPopupCommand);
+
+            this.SetCurrentPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSetCurrentPlaylistCommand);
+            this.SetCurrentSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSetCurrentSubscriptionCommand);
         }
 
         #endregion
@@ -489,23 +503,13 @@ namespace DeskTube.ViewModels
                 this.selectedUserFeed = value;
 
                 this.OnPropertyChanged(() => this.SelectedUserFeed);
-                this.OnPropertyChanged(() => this.ArePlaylistsVisible);
-                this.OnPropertyChanged(() => this.AreSubscriptionsVisible);
                 this.OnPropertyChanged(() => this.CanRemoveVideo);
                 this.OnPropertyChanged(() => this.CanAddFavoriteVideo);
                 this.OnPropertyChanged(() => this.CanSubscribe);
 
-                switch (value)
+                if (this.selectedUserFeed == "favorites")
                 {
-                    case "playlists":
-                        this.LoadUserPlaylists();
-                        break;
-                    case "subscriptions":
-                        this.LoadUserSubscriptions();
-                        break;
-                    case "favorites":
-                        this.LoadUserFavorites();
-                        break;
+                    this.LoadUserFavorites();
                 }
             }
         }
@@ -560,17 +564,6 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
-        /// Gets a value indicating whether [are playlists visible].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [are playlists visible]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ArePlaylistsVisible
-        {
-            get { return !string.IsNullOrEmpty(this.SelectedUserFeed) && this.SelectedUserFeed.Equals("playlists"); }
-        }
-
-        /// <summary>
         /// Gets the subscriptions.
         /// </summary>
         /// <value>
@@ -603,17 +596,6 @@ namespace DeskTube.ViewModels
                     this.LoadSubscriptionVideos();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether [are subscriptions visible].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [are subscriptions visible]; otherwise, <c>false</c>.
-        /// </value>
-        public bool AreSubscriptionsVisible
-        {
-            get { return !string.IsNullOrEmpty(this.SelectedUserFeed) && this.SelectedUserFeed.Equals("subscriptions"); }
         }
 
         /// <summary>
@@ -721,9 +703,55 @@ namespace DeskTube.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the isSubscriptionsPopupOpen.
+        /// </summary>
+        /// <value>The isSubscriptionsPopupOpen.</value>
+        /// <remarks></remarks>
+        public bool IsSubscriptionsPopupOpen
+        {
+            get
+            {
+                return this.isSubscriptionsPopupOpen;
+            }
+
+            set
+            {
+                this.isSubscriptionsPopupOpen = value;
+                this.OnPropertyChanged(() => this.IsSubscriptionsPopupOpen);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the isPlaylistsPopupOpen.
+        /// </summary>
+        /// <value>The isPlaylistsPopupOpen.</value>
+        /// <remarks></remarks>
+        public bool IsPlaylistsPopupOpen
+        {
+            get
+            {
+                return this.isPlaylistsPopupOpen;
+            }
+
+            set
+            {
+                this.isPlaylistsPopupOpen = value;
+                this.OnPropertyChanged(() => this.IsPlaylistsPopupOpen);
+            }
+        }
+
         #endregion
 
         #region COMMANDS
+
+        /// <summary>
+        /// Gets or sets the open selected user feed popup command.
+        /// </summary>
+        /// <value>
+        /// The open selected user feed popup command.
+        /// </value>
+        public DelegateCommand OpenSelectedUserFeedPopupCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the sync command.
@@ -845,6 +873,22 @@ namespace DeskTube.ViewModels
         /// </value>
         public DelegateCommand<Playlist> RemovePlaylistCommand { get; set; }
 
+        /// <summary>
+        /// Gets or sets the load playlist command.
+        /// </summary>
+        /// <value>
+        /// The load playlist command.
+        /// </value>
+        public DelegateCommand<Playlist> SetCurrentPlaylistCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the set current subscription command.
+        /// </summary>
+        /// <value>
+        /// The set current subscription command.
+        /// </value>
+        public DelegateCommand<Subscription> SetCurrentSubscriptionCommand { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -862,10 +906,8 @@ namespace DeskTube.ViewModels
                                  ? new List<string>() { "playlists", "subscriptions", "favorites" }
                                  : null;
 
-            if (this.UserFeeds != null)
-            {
-                this.SelectedUserFeed = this.UserFeeds.First();
-            }
+            this.LoadUserPlaylists();
+            this.LoadUserSubscriptions();
         }
 
         #endregion
@@ -873,71 +915,49 @@ namespace DeskTube.ViewModels
         #region COMMAND HANDLERS
 
         /// <summary>
+        /// Handles the set current playlist command.
+        /// </summary>
+        /// <param name="playlist">The playlist.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSetCurrentPlaylistCommand(Playlist playlist)
+        {
+            this.SelectedUserFeed = this.UserFeeds.First(uf => uf.Equals("playlists"));
+            this.SelectedPlaylist = playlist;
+        }
+
+        /// <summary>
+        /// Handles the set current subscription command.
+        /// </summary>
+        /// <param name="subscription">The subscription.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSetCurrentSubscriptionCommand(Subscription subscription)
+        {
+            this.SelectedUserFeed = this.UserFeeds.First(uf => uf.Equals("subscriptions"));
+            this.SelectedSubscription = subscription;
+        }
+
+        /// <summary>
+        /// Handles the open selected user feed popup command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleOpenSelectedUserFeedPopupCommand()
+        {
+            if (this.SelectedUserFeed.Equals("playlists"))
+            {
+                this.IsPlaylistsPopupOpen = true;
+            }
+            else if (this.SelectedUserFeed.Equals("subscriptions"))
+            {
+                this.IsSubscriptionsPopupOpen = true;
+            }
+        }
+
+        /// <summary>
         /// Handles the sync command.
         /// </summary>
         private void HandleSyncCommand()
         {
-            this.CurrentVideos = null;
-            this.CurrentVideo = null;
-
-            if (this.BrowserView != null)
-            {
-                this.BrowserView.Dispose();
-            }
-
-            this.IsBrowserVisible = false;
-
-            this.ClearTimers();
-
-            var currentUserFeed = this.SelectedUserFeed;
-
-            if (currentUserFeed == null)
-            {
-                this.IsSynced = true;
-                return;
-            }
-
-            if (currentUserFeed.Equals("playlists"))
-            {
-                var currentPlaylistId = this.SelectedPlaylist != null ? this.SelectedPlaylist.Id : null;
-
-                this.Subscriptions = null;
-                this.Playlists = null;
-                this.Favorites = null;
-
-                this.SelectedUserFeed = currentUserFeed;
-                this.SelectedPlaylist = this.Playlists != null
-                                            ? this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
-                                            : null;
-
-            }
-            else if (currentUserFeed.Equals("subscriptions"))
-            {
-                var currentSubscriptionId = this.SelectedSubscription != null ? this.SelectedSubscription.Id : null;
-
-                this.Subscriptions = null;
-                this.Playlists = null;
-                this.Favorites = null;
-
-                this.SelectedUserFeed = currentUserFeed;
-                this.SelectedSubscription = this.Subscriptions != null
-                                                ? this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId)
-                                                : null;
-
-                this.LoadUserPlaylists(); //// in order to be able to add videos from channels to existing playlists
-            }
-            else if (currentUserFeed.Equals("favorites"))
-            {
-                this.Subscriptions = null;
-                this.Playlists = null;
-                this.Favorites = null;
-
-                this.SelectedUserFeed = currentUserFeed;
-
-                this.LoadUserPlaylists(); //// in order to be able to add videos from favorites to existing playlists
-            }
-
-            this.IsSynced = true;
+            this.Sync();
         }
 
         /// <summary>
@@ -1049,7 +1069,15 @@ namespace DeskTube.ViewModels
         {
             video.AtomEntry.EditUri = video.Self;
             this.youtubeRequest.Delete(video);
-            this.IsSynced = false;
+
+            if (this.CurrentVideo != null)
+            {
+                this.IsSynced = false;
+            }
+            else
+            {
+                this.Sync();
+            }
         }
 
         /// <summary>
@@ -1060,7 +1088,15 @@ namespace DeskTube.ViewModels
         {
             var playlistMember = new PlayListMember { VideoId = tuple.Item2.VideoId };
             this.youtubeRequest.AddToPlaylist(tuple.Item1, playlistMember);
-            this.IsSynced = false;
+            
+            if (this.CurrentVideo != null)
+            {
+                this.IsSynced = false;
+            }
+            else
+            {
+                this.Sync();
+            }
         }
 
         /// <summary>
@@ -1075,7 +1111,15 @@ namespace DeskTube.ViewModels
             try
             {
                 this.youtubeRequest.Service.Insert(new Uri("http://gdata.youtube.com/feeds/api/users/default/favorites"), videoEntry);
-                this.IsSynced = false;
+                
+                if (this.CurrentVideo != null)
+                {
+                    this.IsSynced = false;
+                }
+                else
+                {
+                    this.Sync();
+                }
             }
             catch (Exception ex)
             {
@@ -1099,7 +1143,15 @@ namespace DeskTube.ViewModels
             try
             {
                 youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription);
-                this.IsSynced = false;
+                
+                if (this.CurrentVideo != null)
+                {
+                    this.IsSynced = false;
+                }
+                else
+                {
+                    this.Sync();
+                }
             }
             catch (Exception)
             {
@@ -1168,8 +1220,23 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleRemovePlaylistCommand(Playlist playlist)
         {
-            this.youtubeRequest.Delete(playlist);
-            this.IsSynced = false;
+            try
+            {
+                this.youtubeRequest.Delete(playlist);
+
+                if (this.CurrentVideo != null)
+                {
+                    this.IsSynced = false;
+                }
+                else
+                {
+                    this.Sync();
+                }
+            }
+            catch (Exception)
+            {
+                this.Sync();
+            }
         }
 
         /// <summary>
@@ -1179,13 +1246,82 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleRemoveSubscriptionCommand(Subscription subscription)
         {
-            this.youtubeRequest.Delete(subscription);
-            this.IsSynced = false;
+            try
+            {
+                this.youtubeRequest.Delete(subscription);
+
+                if (this.CurrentVideo != null)
+                {
+                    this.IsSynced = false;
+                }
+                else
+                {
+                    this.Sync();
+                }
+            }
+
+            catch (Exception)
+            {
+                this.Sync();
+            }
         }
 
         #endregion
 
         #region PRIVATE METHODS
+
+        /// <summary>
+        /// Syncs this instance.
+        /// </summary>
+        private void Sync()
+        {
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
+
+            if (this.BrowserView != null)
+            {
+                this.BrowserView.Dispose();
+            }
+
+            this.IsBrowserVisible = false;
+
+            this.ClearTimers();
+
+            var currentUserFeed = this.SelectedUserFeed;
+
+            if (currentUserFeed == null)
+            {
+                this.IsSynced = true;
+                return;
+            }
+
+            this.Subscriptions = null;
+            this.Playlists = null;
+            this.Favorites = null;
+
+            this.SelectedUserFeed = currentUserFeed;
+            this.LoadUserPlaylists();
+            this.LoadUserSubscriptions();
+
+            if (currentUserFeed.Equals("playlists"))
+            {
+                var currentPlaylistId = this.SelectedPlaylist != null ? this.SelectedPlaylist.Id : null;
+
+                this.SelectedPlaylist = this.Playlists != null
+                                            ? this.Playlists.FirstOrDefault(p => p.Id == currentPlaylistId)
+                                            : null;
+            }
+            else if (currentUserFeed.Equals("subscriptions"))
+            {
+                var currentSubscriptionId = this.SelectedSubscription != null ? this.SelectedSubscription.Id : null;
+
+                this.SelectedSubscription = this.Subscriptions != null
+                                                ? this.Subscriptions.FirstOrDefault(s => s.Id == currentSubscriptionId)
+                                                : null;
+            }
+
+            this.IsSynced = true;
+        }
 
         /// <summary>
         /// Selects the video.

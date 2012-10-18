@@ -7,16 +7,14 @@ DEVELOPMENT
 * add multimedia keys support
 * add lyrics section (?)
 * mimize to system tray
-* remove subscriptions
 * add sign in when user has chosen to skip login
 * add video download 
 * add new playlist 
-* remove playlist
 
 BUGS
 
 * Volume control is inaccurate when < 10%
-* Fix player overlay (you've no idea what I'm talking about).
+* fix pause / resume
 
 DESIGN
 

@@ -45,8 +45,8 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource LightBlueBrush}"/>
-                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource LightBlueBrush}"/>
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource DarkBlueBrush}"/>
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DarkBlueBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
             </Trigger>
         </ControlTemplate.Triggers>
@@ -72,8 +72,8 @@
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{DynamicResource LightBlueBrush}"/>
-                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource LightBlueBrush}"/>
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource DarkBlueBrush}"/>
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DarkBlueBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource BaseForegroundBrush}"/>
             </Trigger>
         </ControlTemplate.Triggers>

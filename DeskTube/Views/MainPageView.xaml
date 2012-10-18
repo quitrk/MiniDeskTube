@@ -18,73 +18,63 @@
         </Grid.RowDefinitions>
 
         <StackPanel>
-            <StackPanel Margin="10,0,10,10">
-                <!-- user feeds-->
-                <local:UserFeedsView />
+            <!-- user feeds-->
+            <local:UserFeedsView Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}" Margin="10,0,10,10"/>
 
-                <!-- playlists -->
-                <local:PlaylistsView />
+            <!-- video -->
+            <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"/>
 
-                <!-- subscriptions -->
-                <local:SubscriptionsView />
-            </StackPanel>
+            <!-- comments / timer -->
+            <Border Background="{DynamicResource SecondaryBackgroundBrush}" Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,10">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel>
-                <!-- video -->
-                <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"/>
+                    <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn">
+                        <Image Source="../images/commentsIcon.png" Height="16"/>
+                    </Button>
 
-                <!-- comments / timer -->
-                <Border Background="{DynamicResource SecondaryBackgroundBrush}" Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,10">
-                    <Grid Margin="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn">
-                            <Image Source="../images/commentsIcon.png" Height="16"/>
-                        </Button>
-
-                        <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
+                    <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
                     Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
 
-                        <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource BaseForegroundBrush}" HorizontalAlignment="Center" Margin="10,0" 
+                    <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource BaseForegroundBrush}" HorizontalAlignment="Center" Margin="10,0" 
                        Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" FontSize="12"/>
 
-                        <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
-                            <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
+                        <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
 
-                                <StackPanel>
-                                    <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
+                            <StackPanel>
+                                <ListBox ItemsSource="{Binding CurrentVideoComments}" Width="400" Height="400"
                                              Visibility="{Binding CurrentVideoComments.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Margin="0,10,0,0">
-                                                    <TextBlock Text="{Binding Author}" Style="{DynamicResource TextBlockStyle}" />
-                                                    <TextBlock Text="{Binding Content}" Style="{DynamicResource TextBlockStyle}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="{DynamicResource BaseForegroundBrush}"/>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="{Binding Author}" Style="{DynamicResource TextBlockStyle}" />
+                                                <TextBlock Text="{Binding Content}" Style="{DynamicResource TextBlockStyle}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="{DynamicResource BaseForegroundBrush}"/>
 
-                                                    <Path Style="{DynamicResource LineStyle}" Stroke="{DynamicResource BorderBrush}" Margin="0,10,0,0"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
+                                                <Path Style="{DynamicResource LineStyle}" Stroke="{DynamicResource BorderBrush}" Margin="0,10,0,0"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
 
-                                    <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"/>
-                                    <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"/>
-                                </StackPanel>
-                            </Border>
-                        </Popup>
+                                <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"/>
+                                <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
 
-                        <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" VerticalAlignment="Bottom" FontSize="12">
+                    <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" VerticalAlignment="Bottom" FontSize="12">
                     <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
                     <Run Text="/"/>
                     <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>
-                        </TextBlock>
-                    </Grid>
-                </Border>
-            </StackPanel>
+                    </TextBlock>
+                </Grid>
+            </Border>
         </StackPanel>
 
         <!-- current videos -->

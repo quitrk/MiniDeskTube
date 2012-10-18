@@ -47,7 +47,7 @@ namespace Infrastructure.Utilities
             BrowserOverlayContainer = new Form
                                           {
                                               BackColor = Color.Black,
-                                              Opacity = 0.1,
+                                              Opacity = 0.05,
                                               ShowInTaskbar = false,
                                               FormBorderStyle = FormBorderStyle.None
                                           };
@@ -70,7 +70,7 @@ namespace Infrastructure.Utilities
             DependencyPropertyDescriptor dpd = DependencyPropertyDescriptor.FromProperty(UIElement.OpacityProperty, typeof(Window));
             dpd.AddValueChanged(this.owner, delegate
             {
-                BrowserOverlayContainer.Opacity = 0.1;
+                BrowserOverlayContainer.Opacity = 0.05;
             });
 
             BrowserOverlayContainer.FormClosing += delegate { this.owner.Close(); };

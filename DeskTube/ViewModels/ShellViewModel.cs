@@ -57,6 +57,7 @@ namespace DeskTube.ViewModels
         public ShellViewModel()
         {
             this.LogoutCommand = new DelegateCommand(this.HandleLogoutCommand);
+            this.SignInCommand = new DelegateCommand(this.HandleSignInCommand);
         }
 
         #endregion
@@ -143,6 +144,14 @@ namespace DeskTube.ViewModels
         #region COMMANDS
 
         /// <summary>
+        /// Gets or sets the sign in command.
+        /// </summary>
+        /// <value>
+        /// The sign in command.
+        /// </value>
+        public DelegateCommand SignInCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the logout command.
         /// </summary>
         /// <value>
@@ -163,12 +172,28 @@ namespace DeskTube.ViewModels
             this.UserThumbnail = null;
             this.UserName = null;
 
-            this.StartupPageViewModel.IsRememberMeChecked = false;
-
-            if (this.mainPageViewModel != null)
+            if (this.MainPageViewModel != null)
             {
-                this.mainPageViewModel.Dispose();
+                this.MainPageViewModel.Dispose();
                 this.mainPageViewModel = null;
+                this.OnPropertyChanged(() => this.MainPageViewModel);
+            }
+
+            var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowStartupPage"));
+            storyboard.Begin();
+        }
+
+        /// <summary>
+        /// Handles the sign in command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSignInCommand()
+        {
+            if (this.MainPageViewModel != null)
+            {
+                this.MainPageViewModel.Dispose();
+                this.mainPageViewModel = null;
+                this.OnPropertyChanged(() => this.MainPageViewModel);
             }
 
             var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowStartupPage"));
@@ -193,7 +218,7 @@ namespace DeskTube.ViewModels
             this.mainPageViewModel.PopulateData(youtubeRequest);
             this.mainPageViewModel.WindowHost = (Window)this.View;
             this.OnPropertyChanged(() => MainPageViewModel);
-            
+
             var storyboard = ((Storyboard)((Shell)this.View).FindResource("ShowMainPage"));
             storyboard.Begin();
         }
@@ -202,13 +227,14 @@ namespace DeskTube.ViewModels
         /// Called when [user logged in].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
+        /// <param name="request">The request.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         private void OnUserLoggedIn(object sender, YouTubeRequest request)
         {
             var profile = (ProfileEntry)request.Service.Get("http://gdata.youtube.com/feeds/api/users/default");
             var thumbnail = (from e in profile.ExtensionElements where e.XmlName == "thumbnail" select (XmlExtension)e).SingleOrDefault();
-            if (thumbnail != null)
+
+            if (thumbnail != null && thumbnail.Node.Attributes != null)
             {
                 this.UserThumbnail = thumbnail.Node.Attributes["url"].Value;
             }

@@ -1,6 +1,8 @@
-﻿namespace Infrastructure.Interfaces
+﻿using System;
+
+namespace Infrastructure.Interfaces
 {
-    public interface IView
+    public interface IView : IDisposable
     {
         /// <summary>
         /// Sets the data context.

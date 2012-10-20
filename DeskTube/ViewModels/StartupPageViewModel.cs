@@ -215,7 +215,7 @@ namespace DeskTube.ViewModels
                                                                         {
                                                                             Application.Current.Properties[0] = this.IsRememberMeChecked;
                                                                             Application.Current.Properties[1] = this.Username;
-                                                                            Application.Current.Properties[2] = ((StartupPageView)this.View).PasswordBox.Password;
+                                                                            Application.Current.Properties[2] = ((StartupPageView)this.View).auth.Password;
                                                                         }
                                                                         else
                                                                         {
@@ -239,7 +239,7 @@ namespace DeskTube.ViewModels
         {
             try
             {
-                var password = ((StartupPageView)this.View).PasswordBox.Password;
+                var password = ((StartupPageView)this.View).auth.Password;
                 this.settings = new YouTubeRequestSettings("DeskTube", ConfigurationManager.AppSettings["DeveloperKey"],
                                                            this.Username, password) { AutoPaging = true };
                 this.IsLoading = true;
@@ -254,6 +254,19 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region PUBLIC METHODS
+
+        /// <summary>
+        /// Clears the credentials.
+        /// </summary>
+        public void ClearCredentials()
+        {
+            this.Username = null;
+            this.OnPropertyChanged(() => this.Username);
+
+            ((StartupPageView)this.View).auth.Clear();
+
+            this.IsRememberMeChecked = false;
+        }
 
         /// <summary>
         /// Populates the data.
@@ -276,7 +289,7 @@ namespace DeskTube.ViewModels
 
                 this.IsRememberMeChecked = bool.Parse(srReader.ReadLine());
                 this.Username = srReader.ReadLine();
-                var password = ((StartupPageView)this.View).PasswordBox.Password = srReader.ReadLine();
+                var password = ((StartupPageView)this.View).auth.Password = srReader.ReadLine();
 
                 srReader.Close();
 
@@ -288,6 +301,7 @@ namespace DeskTube.ViewModels
             catch (Exception ex)
             {
                 this.IsLoading = false;
+                this.ClearCredentials();
                 MessageBox.Show(ex.Message);
             }
         }
@@ -316,6 +330,8 @@ namespace DeskTube.ViewModels
             this.GoToNewAccountPageCommand = null;
             this.LoginCommand = null;
             this.SkipLoginCommand = null;
+
+            this.View.Dispose();
 
             GC.SuppressFinalize(this);
         }

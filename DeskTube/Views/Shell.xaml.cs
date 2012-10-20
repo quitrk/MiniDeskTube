@@ -83,6 +83,23 @@ namespace DeskTube.Views
             this.DataContext = dataContext;
         }
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        public void Dispose(bool all)
+        {
+
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+
+        }
+
         #endregion
     }
 }

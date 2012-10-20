@@ -25,7 +25,8 @@
             <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"/>
 
             <!-- comments / timer -->
-            <Border Background="{DynamicResource SecondaryBackgroundBrush}" Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,10">
+            <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                    Visibility="{Binding CurrentVideo, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,10">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -34,7 +35,8 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn">
+                    <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="View comments" Command="{Binding ViewCommentsCommand}" x:Name="commentsBtn"
+                            Visibility="{Binding IsCommentsButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Image Source="../images/commentsIcon.png" Height="16"/>
                     </Button>
 
@@ -62,8 +64,12 @@
                                     </ListBox.ItemTemplate>
                                 </ListBox>
 
-                                <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}"/>
-                                <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"/>
+                                <TextBox Margin="10" Tag="Comment this video" Height="50" Width="400" 
+                                         BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource TransparentBackgroundBrush}"
+                                         Foreground="{DynamicResource ForegroundBrush}"
+                                         Text="{Binding NewVideoComment}"/>
+                                <Button Margin="10,0,10,10" HorizontalAlignment="Right" Content="Submit"
+                                        Command="{Binding AddVideoCommentCommand}"/>
                             </StackPanel>
                         </Border>
                     </Popup>

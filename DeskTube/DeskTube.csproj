@@ -56,7 +56,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\Google.GData.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Google.GData.Extensions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=0b4c5df2ebf20876, processorArchitecture=MSIL" />
+    <Reference Include="Google.GData.Extensions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=0b4c5df2ebf20876, processorArchitecture=MSIL">
+      <HintPath>..\References\Google.GData.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="Google.GData.YouTube, Version=2.1.0.0, Culture=neutral, PublicKeyToken=af04a32718ae8833, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\References\Google.GData.YouTube.dll</HintPath>
@@ -68,7 +70,9 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\References\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xaml">
@@ -95,17 +99,14 @@
     <Compile Include="Views\CurrentVideosView.xaml.cs">
       <DependentUpon>CurrentVideosView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InputMessageBox.xaml.cs">
+      <DependentUpon>InputMessageBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainPageView.xaml.cs">
       <DependentUpon>MainPageView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PlaylistsView.xaml.cs">
-      <DependentUpon>PlaylistsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\StartupPageView.xaml.cs">
       <DependentUpon>StartupPageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\SubscriptionsView.xaml.cs">
-      <DependentUpon>SubscriptionsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\UserFeedsView.xaml.cs">
       <DependentUpon>UserFeedsView.xaml</DependentUpon>
@@ -154,11 +155,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MainPageView.xaml">
+    <Page Include="Views\InputMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PlaylistsView.xaml">
+    <Page Include="Views\MainPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -187,10 +188,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\StartupPageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\SubscriptionsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -245,17 +242,6 @@
       <Project>{714455fc-afe9-4547-8e06-f433c7ceb0f4}</Project>
       <Name>Infrastructure</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="MSHTML">
-      <Guid>{3050F1C5-98B5-11CF-BB82-00AA00BDCE0B}</Guid>
-      <VersionMajor>4</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\commentsIcon.png" />

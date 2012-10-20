@@ -56,12 +56,17 @@
                 </MenuItem.Header>
             </MenuItem>
 
+            <!-- favorite -->
             <MenuItem Header="Favorite"
                       Visibility="{Binding DataContext.CanAddFavoriteVideo, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}"
                       Command="{Binding DataContext.AddFavoriteVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+
+            <!-- enqueue -->
+            <MenuItem Header="Enqueue"
+                      Command="{Binding DataContext.EnqueueVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
         </ContextMenu>
     </UserControl.Resources>
-    
+
     <ListBox ItemsSource="{Binding CurrentVideos}" SelectedItem="{Binding CurrentVideo, Mode=OneWay}">
         <ListBox.ItemTemplate>
             <DataTemplate>
@@ -75,14 +80,18 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                            <Border BorderThickness="0,1" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
+                            <Button Style="{DynamicResource CleanButtonStyle}" Foreground="{TemplateBinding Foreground}">
                                 <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                        <Utilities:EventToCommand Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+                                    <i:EventTrigger EventName="MouseDoubleClick">
+                                        <Utilities:EventToCommand 
+                                                Command="{Binding DataContext.SelectVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding }"/>
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
-                                <ContentPresenter Margin="0,3"/>
-                            </Border>
+                                <Border BorderThickness="0,1" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
+                                    <ContentPresenter Margin="0,3"/>
+                                </Border>
+                            </Button>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Foreground" Value="{DynamicResource LightBlueBrush}" />
@@ -95,6 +104,7 @@
                     </Setter.Value>
                 </Setter>
                 <Setter Property="ContextMenu" Value="{StaticResource VideoContextMenu}"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             </Style>
         </ListBox.ItemContainerStyle>
     </ListBox>

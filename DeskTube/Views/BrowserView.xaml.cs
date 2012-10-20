@@ -13,7 +13,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Infrastructure.Utilities;
-using mshtml;
 
 namespace DeskTube.Views
 {
@@ -84,8 +83,7 @@ namespace DeskTube.Views
         {
             if (this.BrowserOverlay != null)
             {
-                this.BrowserOverlay.WebBrowser.Dispose();
-                this.BrowserOverlay.BrowserOverlayContainer.Dispose();
+                this.BrowserOverlay.Dispose();
                 this.BrowserOverlay = null;
             }
 

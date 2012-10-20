@@ -1,15 +1,16 @@
 DEVELOPMENT
 
-* implement add comment
+* implement add comment (in progress)
 * add settings section 
 * think of a solution for buffering problems
 * implement video progress bar 
 * add multimedia keys support
 * add lyrics section (?)
 * mimize to system tray
-* add sign in when user has chosen to skip login
 * add video download 
 * add new playlist 
+* unsubscribe
+* delete playlist
 
 BUGS
 

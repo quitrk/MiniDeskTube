@@ -3,9 +3,9 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using DeskTube.ViewModels;
 using Infrastructure;
 using Infrastructure.Interfaces;
-using mshtml;
 
 namespace DeskTube.Views
 {
@@ -26,6 +26,10 @@ namespace DeskTube.Views
 
         #endregion
 
+        #region EVENT HANDLERS
+
+        #endregion
+
         #region IView overrides
 
         /// <summary>
@@ -35,6 +39,23 @@ namespace DeskTube.Views
         public void SetDataContext(ViewModelBase dataContext)
         {
             this.DataContext = dataContext;
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        public void Dispose(bool all)
+        {
+
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+
         }
 
         #endregion

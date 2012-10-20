@@ -17,7 +17,7 @@ namespace Infrastructure.Utilities
     /// Displays a WinForms.WebBrowser control over a given placement target element in a WPF Window.
     /// Applies the opacity of the Window to the WebBrowser control.
     /// </summary>
-    public class WebBrowserOverlay
+    public class WebBrowserOverlay : IDisposable
     {
         #region PRIVATE FIELDS
 
@@ -55,9 +55,8 @@ namespace Infrastructure.Utilities
             webBrowser.Dock = DockStyle.Fill;
             BrowserOverlayContainer.Controls.Add(webBrowser);
 
-            //owner.SizeChanged += delegate { OnSizeLocationChanged(); };
-            this.owner.LocationChanged += delegate { OnSizeLocationChanged(); };
-            this.placementTarget.SizeChanged += delegate { OnSizeLocationChanged(); };
+            this.owner.LocationChanged += OnOwnerLocationChanged;
+            this.placementTarget.SizeChanged += OnPlacementTargetSizeChanged;
 
             if (this.owner.IsVisible)
                 InitialShow();
@@ -87,21 +86,7 @@ namespace Infrastructure.Utilities
         /// The browser overlay container.
         /// </value>
         public Form BrowserOverlayContainer { get; private set; }
-
-        /// <summary>
-        /// Gets the web browser.
-        /// </summary>
-        /// <value>
-        /// The web browser.
-        /// </value>
-        public WebBrowser WebBrowser
-        {
-            get
-            {
-                return webBrowser;
-            }
-        }
-
+        
         #endregion
 
         #region PRIVATE METHODS
@@ -111,7 +96,7 @@ namespace Infrastructure.Utilities
         /// </summary>
         private void InitialShow()
         {
-            NativeWindow owner = new NativeWindow();
+            var owner = new NativeWindow();
             owner.AssignHandle(((HwndSource)HwndSource.FromVisual(this.owner)).Handle);
             BrowserOverlayContainer.Show(owner);
             owner.ReleaseHandle();
@@ -120,7 +105,7 @@ namespace Infrastructure.Utilities
         /// <summary>
         /// Called when [size location changed].
         /// </summary>
-        private void OnSizeLocationChanged()
+        private void HandleSizeLocationChanged()
         {
             // To reduce flicker when transparency is applied without DWM composition, 
             // do resizing at lower priority.
@@ -159,6 +144,56 @@ namespace Infrastructure.Utilities
 
             BrowserOverlayContainer.SetBounds(screenLocation.X, screenLocation.Y, screenSize.X, screenSize.Y);
             BrowserOverlayContainer.Update();
+        }
+
+        #endregion
+
+        #region EVENT HANDLERS
+
+        /// <summary>
+        /// Called when [placement target size changed].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="SizeChangedEventArgs" /> instance containing the event data.</param>
+        private void OnPlacementTargetSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.HandleSizeLocationChanged();
+        }
+
+        /// <summary>
+        /// Called when [owner location changed].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void OnOwnerLocationChanged(object sender, EventArgs e)
+        {
+            this.HandleSizeLocationChanged();
+        }
+
+        #endregion
+
+        #region IDisposable members
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        public void Dispose(bool all)
+        {
+            this.owner.LocationChanged -= OnOwnerLocationChanged;
+            this.placementTarget.SizeChanged -= OnPlacementTargetSizeChanged;
+
+            this.BrowserOverlayContainer.Dispose();
+            this.webBrowser.Dispose();
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void Dispose()
+        {
+           this.Dispose(true);
         }
 
         #endregion

@@ -19,7 +19,6 @@ using Google.YouTube;
 using Infrastructure;
 using Infrastructure.Utilities;
 using Microsoft.Practices.Prism.Commands;
-using mshtml;
 
 namespace DeskTube.ViewModels
 {
@@ -50,7 +49,7 @@ namespace DeskTube.ViewModels
         /// <summary>
         /// Backing field for IsPaused
         /// </summary>
-        private bool isPaused;
+        private bool isPaused = true;
 
         /// <summary>
         /// Backing field for IsShuffle
@@ -137,6 +136,11 @@ namespace DeskTube.ViewModels
         #region PRIVATE FIELDS
 
         /// <summary>
+        /// The playlist title input
+        /// </summary>
+        private InputMessageBox newPlaylistTitleBox;
+
+        /// <summary>
         /// The video progress timer
         /// </summary>
         private DispatcherTimer progressTimer;
@@ -163,9 +167,13 @@ namespace DeskTube.ViewModels
         /// </summary>
         public MainPageViewModel()
         {
+            this.EnqueuedVideos = new List<Video>();
             this.CurrentVideos = new ObservableCollection<Video>();
+
             this.CurrentVideoComments = new ObservableCollection<Comment>();
 
+            this.CreatePlaylistCommand = new DelegateCommand(this.HandleCreatePlaylistCommand);
+            this.AddVideoCommentCommand = new DelegateCommand(this.HandleAddVideoCommentCommand);
             this.SyncCommand = new DelegateCommand(this.HandleSyncCommand, () => !this.IsSynced);
             this.PauseCommand = new DelegateCommand(this.HandlePauseCommand);
             this.PlayCommand = new DelegateCommand(this.HandlePlayCommand);
@@ -182,14 +190,34 @@ namespace DeskTube.ViewModels
             this.RemovePlaylistCommand = new DelegateCommand<Playlist>(this.HandleRemovePlaylistCommand);
             this.RemoveSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleRemoveSubscriptionCommand);
             this.OpenSelectedUserFeedPopupCommand = new DelegateCommand(this.HandleOpenSelectedUserFeedPopupCommand);
+            this.EnqueueVideoCommand = new DelegateCommand<Video>(this.HandleEnqueueVideoCommand);
 
-            this.SetCurrentPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSetCurrentPlaylistCommand);
-            this.SetCurrentSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSetCurrentSubscriptionCommand);
+            this.SelectPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSelectPlaylistCommand);
+            this.SelectSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSelectSubscriptionCommand);
         }
 
         #endregion
 
         #region PROPERTIES
+
+        /// <summary>
+        /// Gets or sets the new video comment.
+        /// </summary>
+        /// <value>
+        /// The new video comment.
+        /// </value>
+        public string NewVideoComment { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is comments button visible.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is comments button visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCommentsButtonVisible
+        {
+            get { return this.CurrentVideo != null; }
+        }
 
         /// <summary>
         /// Gets or sets the windowHost.
@@ -623,6 +651,8 @@ namespace DeskTube.ViewModels
             {
                 this.currentVideos = value;
                 this.OnPropertyChanged(() => this.CurrentVideos);
+
+                this.EnqueuedVideos.Clear();
             }
         }
 
@@ -662,6 +692,7 @@ namespace DeskTube.ViewModels
             {
                 this.currentVideo = value;
                 this.OnPropertyChanged(() => this.CurrentVideo);
+                this.OnPropertyChanged(() => this.IsCommentsButtonVisible);
             }
         }
 
@@ -741,9 +772,33 @@ namespace DeskTube.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the enqueued videos.
+        /// </summary>
+        /// <value>
+        /// The enqueued videos.
+        /// </value>
+        public List<Video> EnqueuedVideos { get; set; }
+
         #endregion
 
         #region COMMANDS
+
+        /// <summary>
+        /// Gets or sets the create playlist command.
+        /// </summary>
+        /// <value>
+        /// The create playlist command.
+        /// </value>
+        public DelegateCommand CreatePlaylistCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the add video comment command.
+        /// </summary>
+        /// <value>
+        /// The add video comment command.
+        /// </value>
+        public DelegateCommand AddVideoCommentCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the open selected user feed popup command.
@@ -842,6 +897,14 @@ namespace DeskTube.ViewModels
         public DelegateCommand<Video> AddFavoriteVideoCommand { get; set; }
 
         /// <summary>
+        /// Gets or sets the enqueue video command.
+        /// </summary>
+        /// <value>
+        /// The enqueue video command.
+        /// </value>
+        public DelegateCommand<Video> EnqueueVideoCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the add subscription command.
         /// </summary>
         /// <value>
@@ -879,7 +942,7 @@ namespace DeskTube.ViewModels
         /// <value>
         /// The load playlist command.
         /// </value>
-        public DelegateCommand<Playlist> SetCurrentPlaylistCommand { get; set; }
+        public DelegateCommand<Playlist> SelectPlaylistCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the set current subscription command.
@@ -887,7 +950,7 @@ namespace DeskTube.ViewModels
         /// <value>
         /// The set current subscription command.
         /// </value>
-        public DelegateCommand<Subscription> SetCurrentSubscriptionCommand { get; set; }
+        public DelegateCommand<Subscription> SelectSubscriptionCommand { get; set; }
 
         #endregion
 
@@ -906,8 +969,19 @@ namespace DeskTube.ViewModels
                                  ? new List<string>() { "playlists", "subscriptions", "favorites" }
                                  : null;
 
+            if (!this.IsUserAuthenticated)
+            {
+                return;
+            }
+
             this.LoadUserPlaylists();
             this.LoadUserSubscriptions();
+
+            if (this.Playlists != null && this.Playlists.Count == 1)
+            {
+                this.SelectedUserFeed = this.UserFeeds.First(uf => uf.Equals("playlists"));
+                this.SelectedPlaylist = this.Playlists.First();
+            }
         }
 
         #endregion
@@ -915,12 +989,43 @@ namespace DeskTube.ViewModels
         #region COMMAND HANDLERS
 
         /// <summary>
+        /// Handles the create playlist command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleCreatePlaylistCommand()
+        {
+            this.newPlaylistTitleBox = new InputMessageBox();
+            this.newPlaylistTitleBox.Show();
+            this.newPlaylistTitleBox.InputCompleted += this.OnNewPlaylistTitleBoxInputCompleted;
+            this.newPlaylistTitleBox.InputCancelled += this.OnNewPlaylistTitleBoxInputCancelled;
+        }
+
+        /// <summary>
+        /// Handles the add video comment command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleAddVideoCommentCommand()
+        {
+            var comment = new Comment();
+            comment.Content = this.NewVideoComment;
+
+            this.youtubeRequest.AddComment(this.CurrentVideo, comment);
+            this.NewVideoComment = string.Empty;
+            this.OnPropertyChanged(() => this.NewVideoComment);
+        }
+
+        /// <summary>
         /// Handles the set current playlist command.
         /// </summary>
         /// <param name="playlist">The playlist.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        private void HandleSetCurrentPlaylistCommand(Playlist playlist)
+        private void HandleSelectPlaylistCommand(Playlist playlist)
         {
+            if (this.SelectedPlaylist == playlist)
+            {
+                return;
+            }
+
             this.SelectedUserFeed = this.UserFeeds.First(uf => uf.Equals("playlists"));
             this.SelectedPlaylist = playlist;
         }
@@ -930,8 +1035,13 @@ namespace DeskTube.ViewModels
         /// </summary>
         /// <param name="subscription">The subscription.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        private void HandleSetCurrentSubscriptionCommand(Subscription subscription)
+        private void HandleSelectSubscriptionCommand(Subscription subscription)
         {
+            if (this.SelectedSubscription == subscription)
+            {
+                return;
+            }
+
             this.SelectedUserFeed = this.UserFeeds.First(uf => uf.Equals("subscriptions"));
             this.SelectedSubscription = subscription;
         }
@@ -988,7 +1098,19 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandlePlayCommand()
         {
-            this.PlayVideo(this.CurrentVideo);
+            if (this.CurrentVideo != null)
+            {
+                this.PlayVideo(this.CurrentVideo);
+            }
+            else if (this.EnqueuedVideos.Any())
+            {
+                this.PlayVideo(this.EnqueuedVideos.First());
+                this.EnqueuedVideos.RemoveAt(0);
+            }
+            else
+            {
+                this.PlayVideo(this.CurrentVideos.First());
+            }
         }
 
         /// <summary>
@@ -997,24 +1119,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandlePlayNextVideoCommand()
         {
-            if (!this.IsShuffle)
-            {
-                this.IsPaused = false;
-                var nextVideoIndex = this.CurrentVideos.IndexOf(this.CurrentVideo) + 1;
-
-                if (nextVideoIndex < this.CurrentVideos.Count)
-                {
-                    this.PlayVideo(this.CurrentVideos[nextVideoIndex]);
-                }
-                else
-                {
-                    this.PlayVideo(this.CurrentVideos.First());
-                }
-            }
-            else
-            {
-                this.PlayRandomVideo();
-            }
+            this.PlayNextVideo();
         }
 
         /// <summary>
@@ -1088,7 +1193,7 @@ namespace DeskTube.ViewModels
         {
             var playlistMember = new PlayListMember { VideoId = tuple.Item2.VideoId };
             this.youtubeRequest.AddToPlaylist(tuple.Item1, playlistMember);
-            
+
             if (this.CurrentVideo != null)
             {
                 this.IsSynced = false;
@@ -1111,7 +1216,7 @@ namespace DeskTube.ViewModels
             try
             {
                 this.youtubeRequest.Service.Insert(new Uri("http://gdata.youtube.com/feeds/api/users/default/favorites"), videoEntry);
-                
+
                 if (this.CurrentVideo != null)
                 {
                     this.IsSynced = false;
@@ -1121,7 +1226,7 @@ namespace DeskTube.ViewModels
                     this.Sync();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show("The video is already in your favorites list.");
             }
@@ -1143,7 +1248,7 @@ namespace DeskTube.ViewModels
             try
             {
                 youtubeRequest.Insert(new Uri(YouTubeQuery.CreateSubscriptionUri(null)), subscription);
-                
+
                 if (this.CurrentVideo != null)
                 {
                     this.IsSynced = false;
@@ -1233,9 +1338,9 @@ namespace DeskTube.ViewModels
                     this.Sync();
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                this.Sync();
+                MessageBox.Show(exception.Message);
             }
         }
 
@@ -1260,15 +1365,37 @@ namespace DeskTube.ViewModels
                 }
             }
 
-            catch (Exception)
+            catch (Exception ex)
             {
-                this.Sync();
+                MessageBox.Show(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Handles the enqueue video command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleEnqueueVideoCommand(Video video)
+        {
+            this.EnqueuedVideos.Add(video);
         }
 
         #endregion
 
         #region PRIVATE METHODS
+
+        /// <summary>
+        /// Closes the new playlist title box.
+        /// </summary>
+        private void CloseNewPlaylistTitleBox()
+        {
+            this.newPlaylistTitleBox.InputCompleted -= this.OnNewPlaylistTitleBoxInputCompleted;
+            this.newPlaylistTitleBox.InputCancelled -= this.OnNewPlaylistTitleBoxInputCancelled;
+
+            this.newPlaylistTitleBox.Close();
+            this.newPlaylistTitleBox = null;
+        }
 
         /// <summary>
         /// Syncs this instance.
@@ -1358,6 +1485,36 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
+        /// Plays the next video.
+        /// </summary>
+        private void PlayNextVideo()
+        {
+            if (this.EnqueuedVideos.Any())
+            {
+                this.PlayVideo(this.EnqueuedVideos.First());
+                this.EnqueuedVideos.RemoveAt(0);
+            }
+            else if (!this.IsShuffle)
+            {
+                this.IsPaused = false;
+                var nextVideoIndex = this.CurrentVideos.IndexOf(this.CurrentVideo) + 1;
+
+                if (nextVideoIndex < this.CurrentVideos.Count)
+                {
+                    this.PlayVideo(this.CurrentVideos[nextVideoIndex]);
+                }
+                else
+                {
+                    this.PlayVideo(this.CurrentVideos.First());
+                }
+            }
+            else
+            {
+                this.PlayRandomVideo();
+            }
+        }
+
+        /// <summary>
         /// Plays the random video.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -1385,7 +1542,7 @@ namespace DeskTube.ViewModels
                 embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + this.CurrentMinute * 60 + this.CurrentSecond;
                 return new Uri(embedUrl);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }
@@ -1405,17 +1562,7 @@ namespace DeskTube.ViewModels
             this.SelectedPlaylist = null;
             this.SelectedSubscription = null;
 
-            this.CurrentVideos = null;
-            this.CurrentVideo = null;
-
-            if (this.BrowserView != null)
-            {
-                this.BrowserView.Dispose();
-            }
-
-            this.IsBrowserVisible = false;
-
-            this.ClearTimers();
+            this.ClearCurrentUserFeed();
 
             this.IsLoading = true;
             Task.Factory.StartNew(() =>
@@ -1443,16 +1590,23 @@ namespace DeskTube.ViewModels
                 return;
             }
 
-            var enumerable = this.youtubeRequest.GetSubscriptionsFeed("default").Entries as Subscription[] ??
-                             this.youtubeRequest.GetSubscriptionsFeed("default").Entries.ToArray();
-
-            if (!enumerable.Any())
+            try
             {
-                return;
-            }
+                var enumerable = this.youtubeRequest.GetSubscriptionsFeed("default").Entries as Subscription[] ??
+                                 this.youtubeRequest.GetSubscriptionsFeed("default").Entries.ToArray();
 
-            this.Subscriptions = new List<Subscription>(enumerable);
-            this.OnPropertyChanged(() => this.Subscriptions);
+                if (!enumerable.Any())
+                {
+                    return;
+                }
+
+                this.Subscriptions = new List<Subscription>(enumerable);
+                this.OnPropertyChanged(() => this.Subscriptions);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
         }
 
         /// <summary>
@@ -1465,17 +1619,24 @@ namespace DeskTube.ViewModels
                 return;
             }
 
-            var enumerable = this.youtubeRequest.GetPlaylistsFeed("default").Entries as Playlist[] ??
-                             this.youtubeRequest.GetPlaylistsFeed("default").Entries.ToArray();
-
-            if (!enumerable.Any())
+            try
             {
-                return;
-            }
+                var enumerable = this.youtubeRequest.GetPlaylistsFeed("default").Entries as Playlist[] ??
+                                 this.youtubeRequest.GetPlaylistsFeed("default").Entries.ToArray();
 
-            this.Playlists = new List<Playlist>(enumerable);
-            this.OnPropertyChanged(() => this.Playlists);
-            this.OnPropertyChanged(() => this.AvailablePlaylistsForAddVideo);
+                if (!enumerable.Any())
+                {
+                    return;
+                }
+
+                this.Playlists = new List<Playlist>(enumerable);
+                this.OnPropertyChanged(() => this.Playlists);
+                this.OnPropertyChanged(() => this.AvailablePlaylistsForAddVideo);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
         }
 
         /// <summary>
@@ -1484,17 +1645,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadPlaylistVideos()
         {
-            this.CurrentVideos = null;
-            this.CurrentVideo = null;
-
-            if (this.BrowserView != null)
-            {
-                this.BrowserView.Dispose();
-            }
-
-            this.IsBrowserVisible = false;
-
-            this.ClearTimers();
+            this.ClearCurrentUserFeed();
 
             this.IsLoading = true;
             Task.Factory.StartNew(() =>
@@ -1517,17 +1668,7 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void LoadSubscriptionVideos()
         {
-            this.CurrentVideos = null;
-            this.CurrentVideo = null;
-
-            if (this.BrowserView != null)
-            {
-                this.BrowserView.Dispose();
-            }
-
-            this.IsBrowserVisible = false;
-
-            this.ClearTimers();
+            this.ClearCurrentUserFeed();
 
             this.IsLoading = true;
             Task.Factory.StartNew(() =>
@@ -1590,9 +1731,68 @@ namespace DeskTube.ViewModels
             return this.BrowserView.browser;
         }
 
+        /// <summary>
+        /// Clears the current user feed.
+        /// </summary>
+        private void ClearCurrentUserFeed()
+        {
+            this.CurrentVideos = null;
+            this.CurrentVideo = null;
+
+            if (this.BrowserView != null)
+            {
+                this.BrowserView.Dispose();
+            }
+
+            this.IsBrowserVisible = false;
+
+            this.ClearTimers();
+        }
+
+        /// <summary>
+        /// Creates the playlist.
+        /// </summary>
+        /// <param name="playlistTitle">The playlist title.</param>
+        private void CreatePlaylist(string playlistTitle)
+        {
+            var playlist = new Playlist { Title = playlistTitle };
+
+            youtubeRequest.Insert(new Uri(YouTubeQuery.CreatePlaylistsUri(null)), playlist);
+
+            if (this.CurrentVideo != null)
+            {
+                this.IsSynced = false;
+            }
+            else
+            {
+                this.Sync();
+            }
+        }
+
         #endregion
 
         #region EVENT HANDLERS
+
+        /// <summary>
+        /// Called when [new playlist title box input completed].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        private void OnNewPlaylistTitleBoxInputCompleted(object sender, string e)
+        {
+            this.CreatePlaylist(e);
+            this.CloseNewPlaylistTitleBox();
+        }
+
+        /// <summary>
+        /// Called when [new playlist title box input cancelled].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void OnNewPlaylistTitleBoxInputCancelled(object sender, EventArgs e)
+        {
+            this.CloseNewPlaylistTitleBox();
+        }
 
         /// <summary>
         /// Called when [browser navigated].
@@ -1623,14 +1823,7 @@ namespace DeskTube.ViewModels
                 return;
             }
 
-            if (this.IsShuffle)
-            {
-                this.PlayRandomVideo();
-            }
-            else
-            {
-                this.HandlePlayNextVideoCommand();
-            }
+            this.PlayNextVideo();
         }
 
         #endregion
@@ -1668,6 +1861,8 @@ namespace DeskTube.ViewModels
             }
 
             this.ClearTimers();
+
+            this.View.Dispose();
 
             GC.SuppressFinalize(this);
         }

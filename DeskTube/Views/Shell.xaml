@@ -81,12 +81,14 @@
             <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
                 <Image Source="../icon.ico" Height="38"/>
                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Bottom">
-                    <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" Foreground="{DynamicResource LightBlueBrush}"/>
+                    <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" 
+                               Foreground="{DynamicResource LightBlueBrush}"/>
                     <TextBlock Style="{DynamicResource TextBlockStyle}" Text="All YouTube videos on your desktop" />
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Visibility="{Binding UserName, Converter={StaticResource StringToVisibilityConverter}}" VerticalAlignment="Top" Margin="10,-10,20,0">
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Visibility="{Binding UserName, Converter={StaticResource StringToVisibilityConverter}}" 
+                        VerticalAlignment="Top" Margin="10,-10,10,0">
                 <StackPanel VerticalAlignment="Bottom">
                     <TextBlock Text="{Binding UserName}" Style="{DynamicResource TextBlockStyle}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
                     <Button Style="{DynamicResource CleanButtonStyle}" Command="{Binding LogoutCommand}">
@@ -97,6 +99,14 @@
                 <Image Source="{Binding UserThumbnail}" Height="48" Margin="10,0,0,0"/>
             </StackPanel>
 
+            <Grid Grid.Column="1" Margin="10,0" VerticalAlignment="Top"
+                  Visibility="{Binding MainPageViewModel, Converter={StaticResource NullToVisibilityConverter}}">
+                <Button Style="{DynamicResource CleanButtonStyle}" Command="{Binding SignInCommand}" 
+                    Visibility="{Binding UserName, Converter={StaticResource StringToVisibilityInvertedConverter}}">
+                    <TextBlock Text="SIGN IN" Style="{DynamicResource TextBlockStyle}" FontSize="10"  FontFamily="Century Gothic"/>
+                </Button>
+            </Grid>
+            
             <StackPanel Grid.Column="2">
                 <Grid>
                     <Grid.ColumnDefinitions>

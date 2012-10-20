@@ -34,8 +34,9 @@
     
     <!-- SubmenuItem -->
     <ControlTemplate x:Key="{x:Static MenuItem.SubmenuItemTemplateKey}" TargetType="MenuItem">
-        <Border Name="Border" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" MinWidth="200">
-            <Grid Margin="10">
+        <Border Name="Border" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" MinWidth="200"
+                Padding="10">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="13"/>
@@ -54,8 +55,9 @@
     <!-- SubmenuHeader -->
 
     <ControlTemplate x:Key="{x:Static MenuItem.SubmenuHeaderTemplateKey}" TargetType="MenuItem">
-        <Border Name="Border" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" MinWidth="200">
-            <Grid Margin="10">
+        <Border Name="Border" Background="{DynamicResource SecondaryBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1" MinWidth="200"
+                Padding="10">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="13"/>

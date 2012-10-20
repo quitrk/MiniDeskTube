@@ -9,6 +9,8 @@ namespace DeskTube.Views
     /// </summary>
     public partial class UserFeedsView : UserControl
     {
+        #region CONSTRUCTOR
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserFeedsView" /> class.
         /// </summary>
@@ -17,6 +19,10 @@ namespace DeskTube.Views
             InitializeComponent();
         }
 
+        #endregion
+
+        #region EVENT HANDLERS
+
         /// <summary>
         /// Called when [user feed mouse down].
         /// </summary>
@@ -24,49 +30,44 @@ namespace DeskTube.Views
         /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
         private void OnUserFeedMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var item = (ListBoxItem) sender;
+            var item = (ListBoxItem)sender;
 
-            if(item.Content.Equals("playlists"))
+            if (item.Content.Equals("playlists"))
             {
                 item.ContextMenu = this.Resources["PlaylistsMenu"] as ContextMenu;
 
                 item.ContextMenu.IsOpen = true;
                 item.ContextMenu.PlacementTarget = item;
+
+                e.Handled = true;
             }
-            else if(item.Content.Equals("subscriptions"))
+            else if (item.Content.Equals("subscriptions"))
             {
                 item.ContextMenu = this.Resources["SubscriptionsMenu"] as ContextMenu;
 
                 item.ContextMenu.IsOpen = true;
                 item.ContextMenu.PlacementTarget = item;
+
+                e.Handled = true;
             }
         }
-        
+
         /// <summary>
-        /// Called when [list box item preview mouse right button down]. Disables right click item selection.
+        /// Called when [settings mouse down].
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
-        private void OnListBoxItemPreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void OnManageMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var item = (ListBoxItem)sender;
+            this.manageBtn.ContextMenu = this.Resources["ManageMenu"] as ContextMenu;
 
-            if (item.Content.Equals("playlists"))
-            {
-                item.ContextMenu = this.Resources["PlaylistsContextMenu"] as ContextMenu;
-
-                item.ContextMenu.IsOpen = true;
-                item.ContextMenu.PlacementTarget = item;
-            }
-            else if (item.Content.Equals("subscriptions"))
-            {
-                item.ContextMenu = this.Resources["SubscriptionsContextMenu"] as ContextMenu;
-
-                item.ContextMenu.IsOpen = true;
-                item.ContextMenu.PlacementTarget = item;
-            }
+            this.manageBtn.ContextMenu.IsOpen = true;
+            this.manageBtn.ContextMenu.PlacementTarget = this.manageBtn;
 
             e.Handled = true;
         }
+
+        #endregion
     }
 }

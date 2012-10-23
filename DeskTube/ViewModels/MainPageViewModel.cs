@@ -57,14 +57,19 @@ namespace DeskTube.ViewModels
         private bool isShuffle;
 
         /// <summary>
-        /// Backing field for TotalSeconds property
+        /// Backing field for Seconds property
         /// </summary>
-        private int? totalSeconds;
+        private int? seconds;
 
         /// <summary>
-        /// Backing field for TotalMinutes property
+        /// Backing field for Minutes property
         /// </summary>
-        private int? totalMinutes;
+        private int? minutes;
+
+        /// <summary>
+        /// The total seconds
+        /// </summary>
+        private int? totalSeconds;
 
         /// <summary>
         /// Backing field for CurrentMinute
@@ -72,7 +77,12 @@ namespace DeskTube.ViewModels
         private int currentMinute;
 
         /// <summary>
-        /// Backing field for CurrentSecond
+        /// Backing field for CurrentMinuteSecond
+        /// </summary>
+        private int currentMinuteSecond;
+
+        /// <summary>
+        /// The current second
         /// </summary>
         private int currentSecond;
 
@@ -136,6 +146,11 @@ namespace DeskTube.ViewModels
         #region PRIVATE FIELDS
 
         /// <summary>
+        /// The should listen for seeking
+        /// </summary>
+        private bool shouldListenForSeeking;
+
+        /// <summary>
         /// The playlist title input
         /// </summary>
         private InputMessageBox newPlaylistTitleBox;
@@ -191,6 +206,7 @@ namespace DeskTube.ViewModels
             this.RemoveSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleRemoveSubscriptionCommand);
             this.OpenSelectedUserFeedPopupCommand = new DelegateCommand(this.HandleOpenSelectedUserFeedPopupCommand);
             this.EnqueueVideoCommand = new DelegateCommand<Video>(this.HandleEnqueueVideoCommand);
+            this.SeekToCommand = new DelegateCommand(this.HandleSeekToCommand);
 
             this.SelectPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSelectPlaylistCommand);
             this.SelectSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSelectSubscriptionCommand);
@@ -288,7 +304,8 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool IsUserAuthenticated
         {
-            get { return this.youtubeRequest != null && this.youtubeRequest.Settings.Credentials != null; }
+            //get { return this.youtubeRequest != null && this.youtubeRequest.Settings.Credentials != null; }
+            get { return true; }
         }
 
         /// <summary>
@@ -336,22 +353,42 @@ namespace DeskTube.ViewModels
         /// <value>
         /// The total minutes.
         /// </value>
-        public int? TotalMinutes
+        public int? Minutes
         {
             get
             {
-                return this.totalMinutes;
+                return this.minutes;
             }
 
             set
             {
-                this.totalMinutes = value;
-                this.OnPropertyChanged(() => this.TotalMinutes);
+                this.minutes = value;
+                this.OnPropertyChanged(() => this.Minutes);
             }
         }
 
         /// <summary>
         /// Gets the total seconds.
+        /// </summary>
+        /// <value>
+        /// The total seconds.
+        /// </value>
+        public int? Seconds
+        {
+            get
+            {
+                return this.seconds;
+            }
+
+            set
+            {
+                this.seconds = value;
+                this.OnPropertyChanged(() => this.Seconds);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the total seconds.
         /// </summary>
         /// <value>
         /// The total seconds.
@@ -362,6 +399,7 @@ namespace DeskTube.ViewModels
             {
                 return this.totalSeconds;
             }
+
             set
             {
                 this.totalSeconds = value;
@@ -370,9 +408,9 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets the currentMinute.
+        /// Gets or sets the currentMin.
         /// </summary>
-        /// <value>The currentMinute.</value>
+        /// <value>The currentMin.</value>
         /// <remarks></remarks>
         public int CurrentMinute
         {
@@ -389,10 +427,40 @@ namespace DeskTube.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets the currentSecond.
+        /// Gets or sets the CurrentMinuteSecond.
         /// </summary>
-        /// <value>The currentSecond.</value>
-        /// <remarks></remarks>
+        /// <value>
+        /// The CurrentMinuteSecond.
+        /// </value>
+        public int CurrentMinuteSecond
+        {
+            get
+            {
+                return this.currentMinuteSecond;
+            }
+
+            set
+            {
+                if (value == 60)
+                {
+                    this.currentMinuteSecond = 0;
+                    this.CurrentMinute++;
+                }
+                else
+                {
+                    this.currentMinuteSecond = value;
+                }
+
+                this.OnPropertyChanged(() => this.CurrentMinuteSecond);
+            }
+        }
+
+        /// <summary>
+        /// Gets the current second.
+        /// </summary>
+        /// <value>
+        /// The current second.
+        /// </value>
         public int CurrentSecond
         {
             get
@@ -402,17 +470,9 @@ namespace DeskTube.ViewModels
 
             set
             {
-                if (value == 60)
-                {
-                    this.currentSecond = 0;
-                    this.CurrentMinute++;
-                }
-                else
-                {
-                    this.currentSecond = value;
-                }
-
+                this.currentSecond = value;
                 this.OnPropertyChanged(() => this.CurrentSecond);
+                this.shouldListenForSeeking = true;
             }
         }
 
@@ -785,6 +845,14 @@ namespace DeskTube.ViewModels
         #region COMMANDS
 
         /// <summary>
+        /// Gets or sets the seek to command.
+        /// </summary>
+        /// <value>
+        /// The seek to command.
+        /// </value>
+        public DelegateCommand SeekToCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the create playlist command.
         /// </summary>
         /// <value>
@@ -989,6 +1057,20 @@ namespace DeskTube.ViewModels
         #region COMMAND HANDLERS
 
         /// <summary>
+        /// Handles the seek to command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleSeekToCommand()
+        {
+            if (this.shouldListenForSeeking)
+            {
+                this.shouldListenForSeeking = false;
+                
+                this.PlayVideo(this.CurrentVideo, this.CurrentSecond / 60, this.CurrentSecond % 60);
+            }
+        }
+
+        /// <summary>
         /// Handles the create playlist command.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -1100,7 +1182,7 @@ namespace DeskTube.ViewModels
         {
             if (this.CurrentVideo != null)
             {
-                this.PlayVideo(this.CurrentVideo);
+                this.PlayVideo(this.CurrentVideo, this.CurrentMinute, this.CurrentMinuteSecond);
             }
             else if (this.EnqueuedVideos.Any())
             {
@@ -1109,7 +1191,14 @@ namespace DeskTube.ViewModels
             }
             else
             {
-                this.PlayVideo(this.CurrentVideos.First());
+                if (this.IsShuffle)
+                {
+                    this.PlayRandomVideo();
+                }
+                else
+                {
+                    this.PlayVideo(this.CurrentVideos.First());
+                }
             }
         }
 
@@ -1454,8 +1543,11 @@ namespace DeskTube.ViewModels
         /// Selects the video.
         /// </summary>
         /// <param name="video">The video.</param>
-        private void PlayVideo(Video video)
+        /// <param name="currentMin">The current minute.</param>
+        /// <param name="currentMinSec">The current minute second.</param>
+        private void PlayVideo(Video video, int currentMin = 0, int currentMinSec = 0)
         {
+            this.CurrentVideo = null;
             this.CurrentVideo = video;
 
             if (this.CurrentVideo != null)
@@ -1470,16 +1562,22 @@ namespace DeskTube.ViewModels
                     this.ClearTimers();
                 }
 
+                this.CurrentMinute = currentMin;
+                this.CurrentMinuteSecond = currentMinSec;
+                this.CurrentSecond = this.CurrentMinute * 60 + this.CurrentMinuteSecond;
+
                 this.BrowserView = new BrowserView();
                 this.GetBrowser().Navigate(this.GetEmbedUrlFromLink(this.currentVideo.WatchPage.ToString()));
                 this.GetBrowser().Navigated += this.OnBrowserNavigated;
 
-                this.TotalMinutes = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
-                this.TotalSeconds = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
+                this.Minutes = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Minutes;
+                this.Seconds = new TimeSpan(0, 0, 0, int.Parse(this.CurrentVideo.Media.Duration.Seconds)).Seconds;
+                this.TotalSeconds = int.Parse(this.CurrentVideo.Media.Duration.Seconds);
             }
             else
             {
-                this.TotalMinutes = null;
+                this.Minutes = null;
+                this.Seconds = null;
                 this.TotalSeconds = null;
             }
         }
@@ -1539,7 +1637,7 @@ namespace DeskTube.ViewModels
                 embedUrl += startPart.Substring(0, startPart.LastIndexOf(@"/"));
                 embedUrl += "/v/";
                 embedUrl += startPart.Substring(startPart.LastIndexOf("=") + 1);
-                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + this.CurrentMinute * 60 + this.CurrentSecond;
+                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + this.CurrentMinute * 60 + this.CurrentMinuteSecond;
                 return new Uri(embedUrl);
             }
             catch (Exception)
@@ -1698,6 +1796,7 @@ namespace DeskTube.ViewModels
             this.progressTimer.Tick -= this.OnProgressTimerTick;
             this.progressTimer = null;
 
+            this.CurrentMinuteSecond = 0;
             this.CurrentSecond = 0;
             this.CurrentMinute = 0;
         }
@@ -1816,9 +1915,10 @@ namespace DeskTube.ViewModels
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void OnProgressTimerTick(object sender, EventArgs e)
         {
+            this.CurrentMinuteSecond++;
             this.CurrentSecond++;
 
-            if (this.CurrentMinute != this.TotalMinutes || this.CurrentSecond != this.TotalSeconds)
+            if (this.CurrentMinute != this.Minutes || this.CurrentMinuteSecond != this.Seconds)
             {
                 return;
             }

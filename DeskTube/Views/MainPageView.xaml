@@ -41,10 +41,25 @@
                     </Button>
 
                     <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
-                    Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
+                            LargeChange="10" SmallChange="1"
+                            Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
 
-                    <TextBlock Grid.Column="2" Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource BaseForegroundBrush}" HorizontalAlignment="Center" Margin="10,0" 
-                       Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" FontSize="12"/>
+                    <Grid Grid.Column="2">
+                        <Slider Minimum="0" Maximum="{Binding TotalSeconds, UpdateSourceTrigger=PropertyChanged}" 
+                                Value="{Binding CurrentSecond}" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding CurrentSecond}" Margin="10,0"
+                                LargeChange="10" SmallChange="1"
+                                Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource BorderBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                    <Utilities:EventToCommand Command="{Binding SeekToCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+                        <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="{DynamicResource BaseForegroundBrush}" HorizontalAlignment="Center" Margin="10,0" 
+                                   Text="{Binding CurrentVideo.Title}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12"
+                                   IsHitTestVisible="False"/>
+                    </Grid>
 
                     <Popup IsOpen="{Binding IsCommentsPopupOpen}" PlacementTarget="{Binding ElementName=commentsBtn}" StaysOpen="False">
                         <Border Background="{DynamicResource SecondaryBackgroundBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
@@ -75,9 +90,9 @@
                     </Popup>
 
                     <TextBlock Grid.Column="3" Style="{DynamicResource TextBlockStyle}" VerticalAlignment="Bottom" FontSize="12">
-                    <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentSecond, StringFormat=D2}"/>
-                    <Run Text="/"/>
-                    <Run Text="{Binding TotalMinutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding TotalSeconds, StringFormat=D2}"/>
+                        <Run Text="{Binding CurrentMinute, StringFormat={}{0:D2}:}"/><Run Text="{Binding CurrentMinuteSecond, StringFormat=D2}"/>
+                        <Run Text="/"/>
+                        <Run Text="{Binding Minutes, StringFormat={}{0:D2}:}"/><Run Text="{Binding Seconds, StringFormat=D2}"/>
                     </TextBlock>
                 </Grid>
             </Border>

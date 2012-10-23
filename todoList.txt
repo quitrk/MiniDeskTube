@@ -8,9 +8,6 @@ DEVELOPMENT
 * add lyrics section (?)
 * mimize to system tray
 * add video download 
-* add new playlist 
-* unsubscribe
-* delete playlist
 
 BUGS
 

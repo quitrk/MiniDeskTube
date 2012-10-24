@@ -4,3 +4,4 @@ The users can also log in with their YouTube accounts, getting access to playlis
 ![ScreenShot](https://raw.github.com/quitrk/MiniDeskTube/master/img/1.png)
 ![ScreenShot](https://raw.github.com/quitrk/MiniDeskTube/master/img/2.png)
 ![ScreenShot](https://raw.github.com/quitrk/MiniDeskTube/master/img/3.png)
+![ScreenShot](https://raw.github.com/quitrk/MiniDeskTube/master/img/4.png)

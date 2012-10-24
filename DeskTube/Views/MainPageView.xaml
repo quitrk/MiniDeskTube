@@ -9,6 +9,24 @@
              xmlns:local="clr-namespace:DeskTube.Views" mc:Ignorable="d"
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}"
              IsEnabled="{Binding IsViewEnabled}">
+	<UserControl.Resources>
+		<Storyboard x:Key="HideBrowser">
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Height)" Storyboard.TargetName="browserView">
+				<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+			</DoubleAnimationUsingKeyFrames>
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="browserView">
+				<EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+			</DoubleAnimationUsingKeyFrames>
+		</Storyboard>
+		<Storyboard x:Key="ShowBrowser">
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Height)" Storyboard.TargetName="browserView">
+				<SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="400"/>
+			</DoubleAnimationUsingKeyFrames>
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="browserView">
+				<SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="1"/>
+			</DoubleAnimationUsingKeyFrames>
+		</Storyboard>
+	</UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -22,7 +40,8 @@
             <local:UserFeedsView Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}" Margin="10,0,10,10"/>
 
             <!-- video -->
-            <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"/>
+            <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"
+                            Height="400"/>
 
             <!-- comments / timer -->
             <Border Background="{DynamicResource SecondaryBackgroundBrush}"
@@ -107,43 +126,14 @@
             <!-- filter & video controls -->
             <Grid Margin="10,10,10,0" Visibility="{Binding CurrentVideos.Count, Converter={StaticResource CountToVisibilityConverter}, FallbackValue=Collapsed}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Command="{Binding SyncCommand}" Visibility="{Binding IsUserAuthenticated, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,10,0"
-                        BorderBrush="{DynamicResource BorderBrush}">
-                    <Button.Style>
-                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
-                            <Setter Property="Padding" Value="3"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSynced}" Value="True">
-                                    <Setter Property="Content">
-                                        <Setter.Value>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition />
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Synced"/>
-                                                <Image Source="../images/checkedIcon.png" Grid.Column="1" VerticalAlignment="Center" Height="14" Margin="10,0,0,0"/>
-                                            </Grid>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsSynced}" Value="False">
-                                    <Setter Property="Content" Value="Sync now"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <TextBox Tag="Filter..." Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"
+                         Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
 
-                <TextBox FontFamily="Century Gothic" Tag="Filter..." Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" x:Name="filter"
-                         Grid.Column="1"  Background="{DynamicResource TransparentBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
-
-                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="2">
+                <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Grid.Column="1">
                     <Button Style="{DynamicResource CleanButtonStyle}" ToolTip="Stop" Command="{Binding StopCommand}">
                         <Image Source="../images/stopIcon.png" Height="16"/>
                     </Button>

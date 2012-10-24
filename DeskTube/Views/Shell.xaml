@@ -128,25 +128,8 @@
             </StackPanel>
         </Grid>
 
-        <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" x:Name="startupPage" RenderTransformOrigin="0.5,0.5">
-            <ContentControl.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </ContentControl.RenderTransform>
-        </ContentControl>
-        <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" x:Name="mainPage" RenderTransformOrigin="0.5,0.5">
-            <ContentControl.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </ContentControl.RenderTransform>
-        </ContentControl>
+        <ContentControl Grid.Row="1" Content="{Binding StartupPageViewModel.View}" x:Name="startupPage" />
+        
+        <ContentControl Grid.Row="1" Content="{Binding MainPageViewModel.View}" x:Name="mainPage" />
     </Grid>
 </Window>

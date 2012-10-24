@@ -1,10 +1,6 @@
 DEVELOPMENT
 
-* implement add comment (in progress)
-* add settings section 
 * think of a solution for buffering problems
-* implement video progress bar 
-* add multimedia keys support
 * add lyrics section (?)
 * mimize to system tray
 * add video download 
@@ -12,11 +8,9 @@ DEVELOPMENT
 BUGS
 
 * Volume control is inaccurate when < 10%
-* fix pause / resume
 
 DESIGN
 
-* remove FocusVisualStyle from..everywhere
 * implement alternative skin
 * add buttons animation 
 
@@ -24,3 +18,6 @@ REFACTORING
 
 * analyze solution, dispose resources when needed
 * investigate security
+
+
+

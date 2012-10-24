@@ -7,18 +7,23 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using DeskTube.Views;
+using Gma.UserActivityMonitor;
 using Google.GData.Client;
 using Google.GData.YouTube;
 using Google.YouTube;
 using Infrastructure;
 using Infrastructure.Utilities;
 using Microsoft.Practices.Prism.Commands;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MessageBox = System.Windows.MessageBox;
+using WebBrowser = System.Windows.Controls.WebBrowser;
 
 namespace DeskTube.ViewModels
 {
@@ -183,8 +188,8 @@ namespace DeskTube.ViewModels
         public MainPageViewModel()
         {
             this.EnqueuedVideos = new List<Video>();
+            this.PreviousVideos = new List<Video>();
             this.CurrentVideos = new ObservableCollection<Video>();
-
             this.CurrentVideoComments = new ObservableCollection<Comment>();
 
             this.CreatePlaylistCommand = new DelegateCommand(this.HandleCreatePlaylistCommand);
@@ -210,6 +215,8 @@ namespace DeskTube.ViewModels
 
             this.SelectPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSelectPlaylistCommand);
             this.SelectSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSelectSubscriptionCommand);
+
+            HookManager.KeyDown += this.OnHookManagerKeyDown;
         }
 
         #endregion
@@ -304,8 +311,7 @@ namespace DeskTube.ViewModels
         /// </value>
         public bool IsUserAuthenticated
         {
-            //get { return this.youtubeRequest != null && this.youtubeRequest.Settings.Credentials != null; }
-            get { return true; }
+            get { return this.youtubeRequest != null && this.youtubeRequest.Settings.Credentials != null; }
         }
 
         /// <summary>
@@ -712,9 +718,26 @@ namespace DeskTube.ViewModels
                 this.currentVideos = value;
                 this.OnPropertyChanged(() => this.CurrentVideos);
 
+                this.PreviousVideos.Clear();
                 this.EnqueuedVideos.Clear();
             }
         }
+
+        /// <summary>
+        /// Gets or sets the previous videos.
+        /// </summary>
+        /// <value>
+        /// The previous videos.
+        /// </value>
+        public List<Video> PreviousVideos { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enqueued videos.
+        /// </summary>
+        /// <value>
+        /// The enqueued videos.
+        /// </value>
+        public List<Video> EnqueuedVideos { get; set; }
 
         /// <summary>
         /// Gets the current video comments.
@@ -831,14 +854,6 @@ namespace DeskTube.ViewModels
                 this.OnPropertyChanged(() => this.IsPlaylistsPopupOpen);
             }
         }
-
-        /// <summary>
-        /// Gets or sets the enqueued videos.
-        /// </summary>
-        /// <value>
-        /// The enqueued videos.
-        /// </value>
-        public List<Video> EnqueuedVideos { get; set; }
 
         #endregion
 
@@ -1065,7 +1080,7 @@ namespace DeskTube.ViewModels
             if (this.shouldListenForSeeking)
             {
                 this.shouldListenForSeeking = false;
-                
+
                 this.PlayVideo(this.CurrentVideo, this.CurrentSecond / 60, this.CurrentSecond % 60);
             }
         }
@@ -1217,20 +1232,13 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandlePlayPreviousVideoCommand()
         {
-            if (!this.IsShuffle)
+            if (!this.PreviousVideos.Any())
             {
-                this.IsPaused = false;
-                var previousVideoIndex = this.CurrentVideos.IndexOf(this.CurrentVideo) - 1;
+                return;
+            }
 
-                if (previousVideoIndex >= 0)
-                {
-                    this.PlayVideo(this.CurrentVideos[previousVideoIndex]);
-                }
-            }
-            else
-            {
-                this.PlayRandomVideo();
-            }
+            this.PlayVideo(this.PreviousVideos.Last());
+            this.PreviousVideos.Remove(this.PreviousVideos.Last());
         }
 
         /// <summary>
@@ -1251,6 +1259,11 @@ namespace DeskTube.ViewModels
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleSelectVideoCommand(Video video)
         {
+            if (this.CurrentVideo != null)
+            {
+                this.PreviousVideos.Add(this.CurrentVideo);
+            }
+
             this.PlayVideo(video);
         }
 
@@ -1547,7 +1560,6 @@ namespace DeskTube.ViewModels
         /// <param name="currentMinSec">The current minute second.</param>
         private void PlayVideo(Video video, int currentMin = 0, int currentMinSec = 0)
         {
-            this.CurrentVideo = null;
             this.CurrentVideo = video;
 
             if (this.CurrentVideo != null)
@@ -1587,6 +1599,11 @@ namespace DeskTube.ViewModels
         /// </summary>
         private void PlayNextVideo()
         {
+            if (this.CurrentVideo != null)
+            {
+                this.PreviousVideos.Add(this.CurrentVideo);
+            }
+
             if (this.EnqueuedVideos.Any())
             {
                 this.PlayVideo(this.EnqueuedVideos.First());
@@ -1637,7 +1654,7 @@ namespace DeskTube.ViewModels
                 embedUrl += startPart.Substring(0, startPart.LastIndexOf(@"/"));
                 embedUrl += "/v/";
                 embedUrl += startPart.Substring(startPart.LastIndexOf("=") + 1);
-                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + this.CurrentMinute * 60 + this.CurrentMinuteSecond;
+                embedUrl += "&hl=en&autoplay=1&controls=0&showinfo=0&iv_load_policy=3&disablekb=1&rel=0&start=" + (this.CurrentMinute * 60 + this.CurrentMinuteSecond);
                 return new Uri(embedUrl);
             }
             catch (Exception)
@@ -1873,6 +1890,41 @@ namespace DeskTube.ViewModels
         #region EVENT HANDLERS
 
         /// <summary>
+        /// Called when [hook manager key down].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.Windows.Forms.KeyEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void OnHookManagerKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.MediaStop:
+                    this.HandleStopCommand();
+                    break;
+
+                case Keys.MediaPlayPause:
+                    if(this.IsPaused)
+                    {
+                        this.HandlePlayCommand();
+                    }
+                    else
+                    {
+                        this.HandlePauseCommand();
+                    }
+                    break;
+
+                case Keys.MediaPreviousTrack:
+                    this.HandlePlayPreviousVideoCommand();
+                    break;
+
+                case Keys.MediaNextTrack:
+                    this.HandlePlayNextVideoCommand();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Called when [new playlist title box input completed].
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -1945,6 +1997,8 @@ namespace DeskTube.ViewModels
         /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool all)
         {
+            HookManager.KeyDown -= this.OnHookManagerKeyDown;
+
             this.currentVideo = null;
             this.CurrentVideos = null;
             this.selectedPlaylist = null;

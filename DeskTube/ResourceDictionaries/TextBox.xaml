@@ -13,23 +13,43 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
-                    <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}"
-                            Background="{TemplateBinding Background}">
-                        <Grid>
+                    <ControlTemplate.Resources>
+                        <Storyboard x:Key="OnFocusTrue">
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="mouseOver">
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1"/>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                        <Storyboard x:Key="OnFocusFalse">
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="mouseOver">
+                                <SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </ControlTemplate.Resources>
+                    <Grid>
+                        <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}" x:Name="normal"/>
+                        <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{DynamicResource BaseForegroundBrush}" x:Name="mouseOver" Opacity="0"/>
+                        <Grid Margin="{TemplateBinding Padding}">
                             <ScrollViewer x:Name="PART_ContentHost"/>
                             <TextBlock Style="{DynamicResource TextBlockStyle}" Foreground="{TemplateBinding Foreground}"
                                        Text="{TemplateBinding Tag}" Margin="2,0"
                                        Visibility="{TemplateBinding Text, Converter={StaticResource StringToVisibilityInvertedConverter}}"/>
                         </Grid>
-                    </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnFocusFalse}"/>
+                            </Trigger.ExitActions>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnFocusTrue}"/>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsFocused" Value="True">
-                <Setter Property="Background" Value="{DynamicResource BaseForegroundBrush}"/>
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <Style TargetType="{x:Type PasswordBox}">
@@ -44,17 +64,37 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type PasswordBox}">
-                    <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}"
-                            Background="{TemplateBinding Background}">
-                        <ScrollViewer x:Name="PART_ContentHost"/>
-                    </Border>
+                    <ControlTemplate.Resources>
+                        <Storyboard x:Key="OnFocusTrue">
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="mouseOver">
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1"/>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                        <Storyboard x:Key="OnFocusFalse">
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="mouseOver">
+                                <SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </ControlTemplate.Resources>
+                    <Grid>
+                        <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}" x:Name="normal"/>
+                        <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{DynamicResource BaseForegroundBrush}" x:Name="mouseOver" Opacity="0"/>
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnFocusFalse}"/>
+                            </Trigger.ExitActions>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnFocusTrue}"/>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsFocused" Value="True">
-                <Setter Property="Background" Value="{DynamicResource BaseForegroundBrush}"/>
-            </Trigger>
-        </Style.Triggers>
     </Style>
 </ResourceDictionary>

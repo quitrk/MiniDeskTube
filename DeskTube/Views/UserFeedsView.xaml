@@ -89,6 +89,10 @@
                     </DataTemplate>
                 </MenuItem.ItemTemplate>
             </MenuItem>
+            
+            <!-- sync -->
+            <MenuItem Header="Sync" Command="{Binding DataContext.SyncCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      Visibility="{Binding IsSynced, Converter={StaticResource BoolToVisibilityInvertedConverter}}"/>
         </ContextMenu>
     </UserControl.Resources>
 

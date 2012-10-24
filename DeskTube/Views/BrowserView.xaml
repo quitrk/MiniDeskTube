@@ -8,7 +8,7 @@
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
 
     <Grid>
-        <WebBrowser x:Name="browser" Height="400"/>
+        <WebBrowser x:Name="browser" />
         <Border Name="browserOverlayPlacementTarget" 
                 Width="{Binding ActualWidth, ElementName=browser}"
                 Height="{Binding ActualHeight, ElementName=browser}"/>

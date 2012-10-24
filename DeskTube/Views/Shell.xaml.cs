@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
 using DeskTube.ViewModels;
+using Gma.UserActivityMonitor;
 using Infrastructure;
 using Infrastructure.Interfaces;
 
@@ -12,6 +14,9 @@ namespace DeskTube.Views
     /// </summary>
     public partial class Shell : IView
     {
+        #region PRIVATE FIELDS 
+        #endregion
+
         #region CONSTRUCTOR
 
         /// <summary>

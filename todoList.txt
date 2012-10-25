@@ -4,15 +4,21 @@ DEVELOPMENT
 * add lyrics section (?)
 * mimize to system tray
 * add video download 
+* add hour counter
+* add facebook sharing
+* implement fullscreen 
+* scroll for volume up / down
+
 
 BUGS
 
 * Volume control is inaccurate when < 10%
+* fix multimedia keys
 
 DESIGN
 
 * implement alternative skin
-* add buttons animation 
+* smooth icon
 
 REFACTORING
 

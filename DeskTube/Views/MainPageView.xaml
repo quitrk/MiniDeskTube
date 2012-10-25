@@ -41,7 +41,7 @@
 
             <!-- video -->
             <ContentControl Visibility="{Binding IsBrowserVisible, Converter={StaticResource BoolToVisibilityConverter}}" Content="{Binding BrowserView}" x:Name="browserView"
-                            Height="400"/>
+                            Height="300"/>
 
             <!-- comments / timer -->
             <Border Background="{DynamicResource SecondaryBackgroundBrush}"

@@ -55,7 +55,8 @@ namespace Infrastructure.Utilities
             webBrowser.Dock = DockStyle.Fill;
             BrowserOverlayContainer.Controls.Add(webBrowser);
 
-            this.owner.LocationChanged += OnOwnerLocationChanged;
+            this.owner.LocationChanged += this.OnOwnerLocationSizeChanged;
+            this.owner.SizeChanged += this.OnOwnerLocationSizeChanged;
             this.placementTarget.SizeChanged += OnPlacementTargetSizeChanged;
 
             if (this.owner.IsVisible)
@@ -165,7 +166,7 @@ namespace Infrastructure.Utilities
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnOwnerLocationChanged(object sender, EventArgs e)
+        private void OnOwnerLocationSizeChanged(object sender, EventArgs e)
         {
             this.HandleSizeLocationChanged();
         }
@@ -180,7 +181,7 @@ namespace Infrastructure.Utilities
         /// <param name="all"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         public void Dispose(bool all)
         {
-            this.owner.LocationChanged -= OnOwnerLocationChanged;
+            this.owner.LocationChanged -= OnOwnerLocationSizeChanged;
             this.placementTarget.SizeChanged -= OnPlacementTargetSizeChanged;
 
             this.BrowserOverlayContainer.Dispose();

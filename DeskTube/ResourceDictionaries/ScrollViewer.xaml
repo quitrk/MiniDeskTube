@@ -18,14 +18,14 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Setter Property="Foreground" Value="#FF9A9BA4"/>
+        <Setter Property="Foreground" Value="{DynamicResource BorderBrush}"/>
     </Style>
 
     <!-- thumb -->
     <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
         <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Setter Property="IsTabStop" Value="false"/>
-        <Setter Property="Background" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
@@ -79,7 +79,7 @@
                             </RepeatButton.LayoutTransform>
                         </RepeatButton>
 
-                        <Border CornerRadius="4" Grid.Row="1" Background="#FF27282B" >
+                        <Border CornerRadius="4" Grid.Row="1" Background="{DynamicResource SecondaryBackgroundBrush}" >
                             <Track x:Name="PART_Track" IsEnabled="{TemplateBinding IsMouseOver}" IsDirectionReversed="true">
                                 <Track.Thumb>
                                     <Thumb Style="{StaticResource ScrollBarThumb}" BorderThickness="1"/>
@@ -134,7 +134,7 @@
                         </RepeatButton>
 
                         <!-- background -->
-                        <Border VerticalAlignment="Stretch" CornerRadius="4" Background="#FF27282B" Grid.Column="1">
+                        <Border VerticalAlignment="Stretch" CornerRadius="4" Background="{DynamicResource SecondaryBackgroundBrush}" Grid.Column="1">
                             <!-- track -->
                             <Track x:Name="PART_Track" IsEnabled="{TemplateBinding IsMouseOver}">
                                 <Track.DecreaseRepeatButton>

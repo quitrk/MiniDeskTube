@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
@@ -18,18 +19,26 @@ using Gma.UserActivityMonitor;
 using Google.GData.Client;
 using Google.GData.YouTube;
 using Google.YouTube;
+using HtmlAgilityPack;
 using Infrastructure;
 using Infrastructure.Utilities;
 using Microsoft.Practices.Prism.Commands;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MessageBox = System.Windows.MessageBox;
 using WebBrowser = System.Windows.Controls.WebBrowser;
+using DeskTube.com.wikia.lyrics;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace DeskTube.ViewModels
 {
     public class MainPageViewModel : ViewModelBase
     {
         #region BACKING FIELDS
+
+        /// <summary>
+        /// The volume level
+        /// </summary>
+        private int volumeLevel;
 
         /// <summary>
         /// Backing field for IsPlaylistsPopupOpen
@@ -151,11 +160,6 @@ namespace DeskTube.ViewModels
         #region PRIVATE FIELDS
 
         /// <summary>
-        /// The should listen for seeking
-        /// </summary>
-        private bool shouldListenForSeeking;
-
-        /// <summary>
         /// The playlist title input
         /// </summary>
         private InputMessageBox newPlaylistTitleBox;
@@ -176,7 +180,7 @@ namespace DeskTube.ViewModels
         /// <summary>
         /// The random object used for shuffling videos
         /// </summary>
-        private readonly Random random = new Random(2000);
+        private readonly Random random = new Random();
 
         #endregion
 
@@ -187,6 +191,8 @@ namespace DeskTube.ViewModels
         /// </summary>
         public MainPageViewModel()
         {
+            this.VolumeLevel = ApplicationVolume.GetVolume();
+
             this.EnqueuedVideos = new List<Video>();
             this.PreviousVideos = new List<Video>();
             this.CurrentVideos = new ObservableCollection<Video>();
@@ -212,6 +218,7 @@ namespace DeskTube.ViewModels
             this.OpenSelectedUserFeedPopupCommand = new DelegateCommand(this.HandleOpenSelectedUserFeedPopupCommand);
             this.EnqueueVideoCommand = new DelegateCommand<Video>(this.HandleEnqueueVideoCommand);
             this.SeekToCommand = new DelegateCommand(this.HandleSeekToCommand);
+            this.ChangeVolumeCommand = new DelegateCommand(this.HandleChangeVolumeCommand);
 
             this.SelectPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSelectPlaylistCommand);
             this.SelectSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSelectSubscriptionCommand);
@@ -322,14 +329,11 @@ namespace DeskTube.ViewModels
         /// </value>
         public int VolumeLevel
         {
-            get
-            {
-                return ApplicationVolume.GetVolume();
-            }
+            get { return this.volumeLevel; }
 
             set
             {
-                ApplicationVolume.SetVolume(value);
+                this.volumeLevel = value;
                 this.OnPropertyChanged(() => this.VolumeLevel);
             }
         }
@@ -478,7 +482,6 @@ namespace DeskTube.ViewModels
             {
                 this.currentSecond = value;
                 this.OnPropertyChanged(() => this.CurrentSecond);
-                this.shouldListenForSeeking = true;
             }
         }
 
@@ -773,9 +776,16 @@ namespace DeskTube.ViewModels
 
             set
             {
+                if(this.currentVideo == value)
+                {
+                    return;
+                }
+
                 this.currentVideo = value;
                 this.OnPropertyChanged(() => this.CurrentVideo);
                 this.OnPropertyChanged(() => this.IsCommentsButtonVisible);
+
+                this.GetLyrics();
             }
         }
 
@@ -858,6 +868,14 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region COMMANDS
+
+        /// <summary>
+        /// Gets or sets the change volume command.
+        /// </summary>
+        /// <value>
+        /// The change volume command.
+        /// </value>
+        public DelegateCommand ChangeVolumeCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the seek to command.
@@ -1072,17 +1090,21 @@ namespace DeskTube.ViewModels
         #region COMMAND HANDLERS
 
         /// <summary>
+        /// Handles the change volume command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleChangeVolumeCommand()
+        {
+            ApplicationVolume.SetVolume(this.VolumeLevel);
+        }
+
+        /// <summary>
         /// Handles the seek to command.
         /// </summary>
         /// <exception cref="System.NotImplementedException"></exception>
         private void HandleSeekToCommand()
         {
-            if (this.shouldListenForSeeking)
-            {
-                this.shouldListenForSeeking = false;
-
-                this.PlayVideo(this.CurrentVideo, this.CurrentSecond / 60, this.CurrentSecond % 60);
-            }
+            this.PlayVideo(this.CurrentVideo, this.CurrentSecond / 60, this.CurrentSecond % 60);
         }
 
         /// <summary>
@@ -1885,6 +1907,55 @@ namespace DeskTube.ViewModels
             }
         }
 
+        private string GetLyrics()
+        {
+            var lyrics = string.Empty;
+            var wiki = new LyricWiki();
+            var result = new LyricsResult();
+            var artist = this.CurrentVideo.Title.Split('-')[0];
+            var song = this.CurrentVideo.Title.Split('-')[1];
+            
+
+            if (wiki.checkSongExists(artist, song))
+            {
+                result = wiki.getSong(artist, song);
+
+                var document = new HtmlDocument();
+                document.Load(result.url);
+
+                var collection = document.DocumentNode.SelectNodes("//a");
+                foreach (HtmlNode link in collection)
+                {
+                    string target = link.Attributes["href"].Value;
+                }
+            }
+            else
+            {
+                artist = this.CurrentVideo.Title.Split('-')[1];
+                song = this.CurrentVideo.Title.Split('-')[0];
+
+                if (wiki.checkSongExists(artist, song))
+                {
+                    result = wiki.getSong(artist, song);
+
+                    var document = new HtmlDocument();
+                    document.Load(result.url);
+
+                    var collection = document.DocumentNode.SelectNodes("//a");
+                    foreach (HtmlNode link in collection)
+                    {
+                        string target = link.Attributes["href"].Value;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("failed");
+                }
+            }
+
+            return lyrics;
+        }
+
         #endregion
 
         #region EVENT HANDLERS
@@ -1904,7 +1975,7 @@ namespace DeskTube.ViewModels
                     break;
 
                 case Keys.MediaPlayPause:
-                    if(this.IsPaused)
+                    if (this.IsPaused)
                     {
                         this.HandlePlayCommand();
                     }

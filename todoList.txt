@@ -3,7 +3,7 @@ DEVELOPMENT
 * think of a solution for buffering problems
 * add lyrics section (?)
 * mimize to system tray
-* add video download 
+* add video download (?)
 * add hour counter
 * add facebook sharing
 * implement fullscreen 
@@ -12,13 +12,11 @@ DEVELOPMENT
 
 BUGS
 
-* Volume control is inaccurate when < 10%
 * fix multimedia keys
 
 DESIGN
 
 * implement alternative skin
-* smooth icon
 
 REFACTORING
 

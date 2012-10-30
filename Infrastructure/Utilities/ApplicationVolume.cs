@@ -45,7 +45,7 @@ namespace Infrastructure.Utilities
         /// <param name="newValue">The new value (between 0 and 100).</param>
         public static void SetVolume(int newValue)
         {
-            var newVolume = ((ushort.MaxValue / 10) * (newValue / 10));
+            var newVolume = ((ushort.MaxValue / 10) * (double)newValue / 10);
             var newVolumeAllChannels = ((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16);
             waveOutSetVolume(IntPtr.Zero, newVolumeAllChannels);
         }

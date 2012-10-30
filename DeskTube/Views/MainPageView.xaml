@@ -60,13 +60,19 @@
                     </Button>
 
                     <Slider Minimum="0" Maximum="100" Value="{Binding VolumeLevel}" Grid.Column="1" Margin="10,0,0,0"
-                            LargeChange="10" SmallChange="1"
-                            Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}"/>
+                            SmallChange="1"
+                            Width="100" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding VolumeLevel}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="ValueChanged">
+                                <Utilities:EventToCommand Command="{Binding ChangeVolumeCommand}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Slider>
 
                     <Grid Grid.Column="2">
                         <Slider Minimum="0" Maximum="{Binding TotalSeconds, UpdateSourceTrigger=PropertyChanged}" 
                                 Value="{Binding CurrentSecond}" IsSelectionRangeEnabled="True" SelectionStart="0" SelectionEnd="{Binding CurrentSecond}" Margin="10,0"
-                                LargeChange="10" SmallChange="1"
+                                SmallChange="1"
                                 Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource BorderBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}">
                             <i:Interaction.Triggers>

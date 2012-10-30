@@ -32,5 +32,15 @@ namespace DeskTube.Properties {
                 return ((string)(this["DeveloperKey"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://lyrics.wikia.com/server.php")]
+        public string DeskTube_com_wikia_lyrics_LyricWiki {
+            get {
+                return ((string)(this["DeskTube_com_wikia_lyrics_LyricWiki"]));
+            }
+        }
     }
 }

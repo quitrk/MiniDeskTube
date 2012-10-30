@@ -36,6 +36,11 @@ namespace DeskTube.ViewModels
         #region BACKING FIELDS
 
         /// <summary>
+        /// Backing field for CurrentVideoLyrics property
+        /// </summary>
+        private string currentVideoLyrics;
+
+        /// <summary>
         /// The volume level
         /// </summary>
         private int volumeLevel;
@@ -54,6 +59,11 @@ namespace DeskTube.ViewModels
         /// Backing field for IsCommentsPopupOpen
         /// </summary>
         private bool isCommentsPopupOpen;
+
+        /// <summary>
+        /// Backing field for IsLyricsPopupOpen property
+        /// </summary>
+        private bool isLyricsPopupOpen;
 
         /// <summary>
         /// Backing field for CurrentVideoComments property
@@ -207,6 +217,7 @@ namespace DeskTube.ViewModels
             this.PlayPreviousVideoCommand = new DelegateCommand(this.HandlePlayPreviousVideoCommand);
             this.StopCommand = new DelegateCommand(this.HandleStopCommand);
             this.ViewCommentsCommand = new DelegateCommand(this.HandleViewCommentsCommand);
+            this.ViewLyricsCommand = new DelegateCommand(this.HandleViewLyricsCommand);
             this.SelectVideoCommand = new DelegateCommand<Video>(this.HandleSelectVideoCommand);
             this.RemoveVideoCommand = new DelegateCommand<Video>(this.HandleRemoveVideoCommand);
             this.AddVideoToPlaylistCommand = new DelegateCommand<Tuple<Playlist, Video>>(this.HandleAddVideoToPlaylistCommand);
@@ -247,6 +258,17 @@ namespace DeskTube.ViewModels
         public bool IsCommentsButtonVisible
         {
             get { return this.CurrentVideo != null; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is lyrics button visible.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is lyrics button visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLyricsButtonVisible
+        {
+            get { return !string.IsNullOrEmpty(this.CurrentVideoLyrics); }
         }
 
         /// <summary>
@@ -354,6 +376,26 @@ namespace DeskTube.ViewModels
             {
                 this.isCommentsPopupOpen = value;
                 this.OnPropertyChanged(() => this.IsCommentsPopupOpen);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is lyrics popup open.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is lyrics popup open; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLyricsPopupOpen
+        {
+            get
+            {
+                return this.isLyricsPopupOpen;
+            }
+
+            set
+            {
+                this.isLyricsPopupOpen = value;
+                this.OnPropertyChanged(() => this.IsLyricsPopupOpen);
             }
         }
 
@@ -776,7 +818,7 @@ namespace DeskTube.ViewModels
 
             set
             {
-                if(this.currentVideo == value)
+                if (this.currentVideo == value)
                 {
                     return;
                 }
@@ -785,7 +827,31 @@ namespace DeskTube.ViewModels
                 this.OnPropertyChanged(() => this.CurrentVideo);
                 this.OnPropertyChanged(() => this.IsCommentsButtonVisible);
 
-                this.GetLyrics();
+                Task.Factory.StartNew(() =>
+                                          {
+                                              this.CurrentVideoLyrics = this.GetLyrics();
+                                          });
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current video lyrics.
+        /// </summary>
+        /// <value>
+        /// The current video lyrics.
+        /// </value>
+        public string CurrentVideoLyrics
+        {
+            get
+            {
+                return this.currentVideoLyrics;
+            }
+
+            set
+            {
+                this.currentVideoLyrics = value;
+                this.OnPropertyChanged(() => this.CurrentVideoLyrics);
+                this.OnPropertyChanged(() => this.IsLyricsButtonVisible);
             }
         }
 
@@ -924,6 +990,14 @@ namespace DeskTube.ViewModels
         /// The view comments command.
         /// </value>
         public DelegateCommand ViewCommentsCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the view lyrics command.
+        /// </summary>
+        /// <value>
+        /// The view lyrics command.
+        /// </value>
+        public DelegateCommand ViewLyricsCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the stop command.
@@ -1198,6 +1272,15 @@ namespace DeskTube.ViewModels
             this.youtubeRequest.Settings.AutoPaging = false;
             this.CurrentVideoComments = new ObservableCollection<Comment>(this.youtubeRequest.GetComments(this.CurrentVideo).Entries);
             this.youtubeRequest.Settings.AutoPaging = true;
+        }
+
+        /// <summary>
+        /// Handles the view lyrics command.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleViewLyricsCommand()
+        {
+            this.IsLyricsPopupOpen = true;
         }
 
         /// <summary>
@@ -1508,6 +1591,42 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region PRIVATE METHODS
+
+        /// <summary>
+        /// Lyricses the specified result.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private static string GetLyricsFromResult(LyricsResult result)
+        {
+            var lyrics = string.Empty;
+            var webReq = System.Net.WebRequest.Create(result.url);
+            var webRes = webReq.GetResponse();
+            var mystream = webRes.GetResponseStream();
+
+            if (mystream != null)
+            {
+                var document = new HtmlDocument();
+                document.Load(mystream);
+
+                var node = document.DocumentNode.SelectSingleNode("//div[@class='lyricbox']");
+
+                for (int i = 1; i < node.ChildNodes.Count; i++)
+                {
+                    if (node.ChildNodes[i] is HtmlTextNode)
+                    {
+                        if (HttpUtility.HtmlDecode(node.ChildNodes[i].InnerText).Contains("<!--"))
+                        {
+                            break;
+                        }
+
+                        lyrics += node.ChildNodes[i].InnerText + Environment.NewLine;
+                    }
+                }
+            }
+
+            return HttpUtility.HtmlDecode(lyrics);
+        }
 
         /// <summary>
         /// Closes the new playlist title box.
@@ -1907,50 +2026,38 @@ namespace DeskTube.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets the lyrics.
+        /// </summary>
+        /// <returns></returns>
         private string GetLyrics()
         {
             var lyrics = string.Empty;
             var wiki = new LyricWiki();
             var result = new LyricsResult();
+
+            if (this.CurrentVideo.Title.Split('-').Count() < 2)
+            {
+                return lyrics;
+            }
+
             var artist = this.CurrentVideo.Title.Split('-')[0];
             var song = this.CurrentVideo.Title.Split('-')[1];
-            
+
+            if (wiki.checkSongExists(artist, song))
+            {
+                result = wiki.getSong(artist, song);
+                return GetLyricsFromResult(result);
+            }
+
+            artist = this.CurrentVideo.Title.Split('-')[1];
+            song = this.CurrentVideo.Title.Split('-')[0];
 
             if (wiki.checkSongExists(artist, song))
             {
                 result = wiki.getSong(artist, song);
 
-                var document = new HtmlDocument();
-                document.Load(result.url);
-
-                var collection = document.DocumentNode.SelectNodes("//a");
-                foreach (HtmlNode link in collection)
-                {
-                    string target = link.Attributes["href"].Value;
-                }
-            }
-            else
-            {
-                artist = this.CurrentVideo.Title.Split('-')[1];
-                song = this.CurrentVideo.Title.Split('-')[0];
-
-                if (wiki.checkSongExists(artist, song))
-                {
-                    result = wiki.getSong(artist, song);
-
-                    var document = new HtmlDocument();
-                    document.Load(result.url);
-
-                    var collection = document.DocumentNode.SelectNodes("//a");
-                    foreach (HtmlNode link in collection)
-                    {
-                        string target = link.Attributes["href"].Value;
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("failed");
-                }
+                return GetLyricsFromResult(result);
             }
 
             return lyrics;

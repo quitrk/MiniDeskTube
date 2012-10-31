@@ -79,7 +79,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
-                <Image Source="../icon.ico" Height="38"/>
+                <Image Source="../images/ico40.png" Height="38"/>
                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Bottom">
                     <TextBlock Style="{DynamicResource TextBlockStyle}" FontSize="20" FontFamily="Century Gothic" Text="MiniDeskTube" FontWeight="SemiBold" 
                                Foreground="{DynamicResource LightBlueBrush}"/>

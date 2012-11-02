@@ -1,0 +1,9 @@
+﻿<Window x:Class="DeskTube.Views.ShareOnFacebookWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ShareOnFacebookWindow" Height="400" Width="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+   
+    <WebBrowser x:Name="browser"/>
+</Window>

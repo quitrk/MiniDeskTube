@@ -10,12 +10,11 @@
              d:DataContext="{d:DesignInstance ViewModels:MainPageViewModel}">
 
     <UserControl.Resources>
-        <ContextMenu x:Key="VideoContextMenu" 
-                     Visibility="{Binding DataContext.IsUserAuthenticated, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}">
+        <ContextMenu x:Key="VideoContextMenu">
 
             <!-- add to -->
             <MenuItem Header="Add to" 
-                          Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}}"
+                          Visibility="{Binding DataContext.AvailablePlaylistsForAddVideo.Count, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CountToVisibilityConverter}, FallbackValue=Collapsed}"
                           ItemsSource="{Binding DataContext.AvailablePlaylistsForAddVideo, RelativeSource={RelativeSource AncestorType=UserControl}}">
                 <MenuItem.ItemTemplate>
                     <DataTemplate>
@@ -64,6 +63,10 @@
             <!-- enqueue -->
             <MenuItem Header="Enqueue"
                       Command="{Binding DataContext.EnqueueVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
+            
+            <!-- share of fb -->
+            <MenuItem Header="Share on Facebook"
+                      Command="{Binding DataContext.ShareOnFacebookCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding }"/>
         </ContextMenu>
     </UserControl.Resources>
 

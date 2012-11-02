@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -170,6 +171,11 @@ namespace DeskTube.ViewModels
         #region PRIVATE FIELDS
 
         /// <summary>
+        /// Window used for sharing videos on facebook
+        /// </summary>
+        public ShareOnFacebookWindow shareOnFacebookWindow;
+
+        /// <summary>
         /// The playlist title input
         /// </summary>
         private InputMessageBox newPlaylistTitleBox;
@@ -230,7 +236,7 @@ namespace DeskTube.ViewModels
             this.EnqueueVideoCommand = new DelegateCommand<Video>(this.HandleEnqueueVideoCommand);
             this.SeekToCommand = new DelegateCommand(this.HandleSeekToCommand);
             this.ChangeVolumeCommand = new DelegateCommand(this.HandleChangeVolumeCommand);
-
+            this.ShareOnFacebookCommand = new DelegateCommand<Video>(this.HandleShareOnFacebookCommand);
             this.SelectPlaylistCommand = new DelegateCommand<Playlist>(this.HandleSelectPlaylistCommand);
             this.SelectSubscriptionCommand = new DelegateCommand<Subscription>(this.HandleSelectSubscriptionCommand);
 
@@ -240,7 +246,7 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region PROPERTIES
-
+        
         /// <summary>
         /// Gets or sets the new video comment.
         /// </summary>
@@ -936,6 +942,14 @@ namespace DeskTube.ViewModels
         #region COMMANDS
 
         /// <summary>
+        /// Gets or sets the share on facebook command.
+        /// </summary>
+        /// <value>
+        /// The share on facebook command.
+        /// </value>
+        public DelegateCommand<Video> ShareOnFacebookCommand { get; set; }
+
+        /// <summary>
         /// Gets or sets the change volume command.
         /// </summary>
         /// <value>
@@ -1162,6 +1176,18 @@ namespace DeskTube.ViewModels
         #endregion
 
         #region COMMAND HANDLERS
+
+        /// <summary>
+        /// Handles the share on facebook command.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void HandleShareOnFacebookCommand(Video video)
+        {
+            this.shareOnFacebookWindow = new ShareOnFacebookWindow();
+            this.shareOnFacebookWindow.Share(this.GetShareUrlFromFromVideo(video));
+            this.shareOnFacebookWindow.Show();
+        }
 
         /// <summary>
         /// Handles the change volume command.
@@ -1802,6 +1828,27 @@ namespace DeskTube.ViewModels
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Gets the share URL from from video.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private string GetShareUrlFromFromVideo(Video video)
+        {
+            var url = string.Empty;
+            url += "http://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D";
+            url += video.VideoId;
+            url += "%26feature%3Dshare&t=";
+
+            for (var i = 0; i < video.Title.Split().Count(); i++)
+            {
+                url += HttpUtility.HtmlEncode(video.Title.Split()[i]);
+            }
+
+            return url;
         }
 
         /// <summary>
